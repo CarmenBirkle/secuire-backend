@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWManagerService", "PWManagerService\PWManagerService.csproj", "{6CF8A9FB-E4A7-4E3E-A02C-C6EFC5A5168B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PWManagerService", "PWManagerService\PWManagerService.csproj", "{6CF8A9FB-E4A7-4E3E-A02C-C6EFC5A5168B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PWManagerServiceModelEF", "PWManagerServiceModelEF\PWManagerServiceModelEF.csproj", "{5361F5E0-CA19-4D1C-8567-B9DA1D6256DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6CF8A9FB-E4A7-4E3E-A02C-C6EFC5A5168B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CF8A9FB-E4A7-4E3E-A02C-C6EFC5A5168B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CF8A9FB-E4A7-4E3E-A02C-C6EFC5A5168B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5361F5E0-CA19-4D1C-8567-B9DA1D6256DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5361F5E0-CA19-4D1C-8567-B9DA1D6256DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5361F5E0-CA19-4D1C-8567-B9DA1D6256DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5361F5E0-CA19-4D1C-8567-B9DA1D6256DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

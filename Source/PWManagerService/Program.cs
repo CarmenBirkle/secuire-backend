@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
+using PWManagerServiceModelEF;
 using Serilog;
+using Serilog.Context;
 using Serilog.Core;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -56,6 +58,8 @@ namespace PWManagerService
                 }));
 
 
+            builder.Services.AddDbContext<DataContext>();
+
             WebApplication app = builder.Build();
 
             // aktiviert die Limitierung
@@ -89,5 +93,8 @@ namespace PWManagerService
         /// Builder/App Configuration
         /// </summary>
         public static IConfiguration Configuration { get; private set; }
+
+
+      
     }
 }
