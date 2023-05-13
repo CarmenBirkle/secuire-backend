@@ -8,7 +8,7 @@ namespace PWManagerServiceModelEF
 {
     public class SafeNoteEntry : DataEntry
     {
-        public SafeNoteEntry() { }
+        public SafeNoteEntry() : base() { }
         public int Id { get; set; }
         public string SafeNote { get; set; } = string.Empty;
     }

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace PWManagerServiceModelEF
 {
+    /// <summary>
+    /// Einträge, welche User abspeichert - alles verschlüsselt -> daher überall Datentyp string
+    /// </summary>
     public abstract class DataEntry
     {
         public DataEntry() { }
@@ -20,7 +23,8 @@ namespace PWManagerServiceModelEF
 
     public class DataEntryLists
     {
-        public List<LoginEntry> LoginEntryList { get; set; } = new List<LoginEntry>();
-        public List<SafeNoteEntry> SafeNoteEntryList { get; set; } = new List<SafeNoteEntry>();
+        public List<LoginEntry>? LoginEntryList { get; set; } = new List<LoginEntry>();
+        public List<SafeNoteEntry>? SafeNoteEntryList { get; set; } = new List<SafeNoteEntry>();
+        public List<PaymentCardEntry>? PaymentCardEntryList { get; set; } = new List<PaymentCardEntry>();
     }
 }

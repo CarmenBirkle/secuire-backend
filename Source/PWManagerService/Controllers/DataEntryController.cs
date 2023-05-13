@@ -18,10 +18,10 @@ namespace PWManagerService.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<ResponseBody<SafeNoteEntry>>> GetId(int id)
+        public async Task<ActionResult<ResponseBody<DataEntry>>> GetId(int id)
         {
-            ResponseBody<DataEntry> response = new ResponseBody<DataEntry>();   
-            DataEntry entry =   new SafeNoteEntry()
+            ResponseBody<DataEntry> response = new ResponseBody<DataEntry>();
+            SafeNoteEntry entry = new SafeNoteEntry()
             {
                 Id = 1,
                 Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
@@ -38,11 +38,13 @@ namespace PWManagerService.Controllers
 
         [HttpGet]
         [Route("all")]
-        public async Task<ActionResult<ResponseBody<List<DataEntry>>>> GetAll()
+        public async Task<ActionResult<ResponseBody<DataEntryLists>>> GetAll()
         {
-            ResponseBody<List<DataEntry>> responseBody = new ResponseBody<List<DataEntry>>();
-            responseBody.Data = new List<DataEntry>();
-            
+            ResponseBody<DataEntryLists> responseBody = new ResponseBody<DataEntryLists>();
+            DataEntryLists entries = new DataEntryLists();
+
+            responseBody.Data = entries;
+
 
             SafeNoteEntry noteEntry = new SafeNoteEntry()
             {
@@ -52,11 +54,28 @@ namespace PWManagerService.Controllers
                 CustomTopics = new Dictionary<string, string>(),
                 SafeNote = "Z8Qf62joUrQ1e6hoRo/btXp6j0QyjoG3vp37iuUyjRm1WJITZNVIhAUjArt9720D",//Hier steht eine ganz sichere Notiz
                 Subject = "WF0e1dHSkl4En+FMLl5Hs/xRRUGGPNgmNpwmGsUrENs="//Hier steht das Thema
+            }; SafeNoteEntry noteEntry2 = new SafeNoteEntry()
+            {
+                Id = 2,
+                Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
+                Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
+                CustomTopics = new Dictionary<string, string>(),
+                SafeNote = "Z8Qf62joUrQ1e6hoRo/btXp6j0QyjoG3vp37iuUyjRm1WJITZNVIhAUjArt9720D",//Hier steht eine ganz sichere Notiz
+                Subject = "WF0e1dHSkl4En+FMLl5Hs/xRRUGGPNgmNpwmGsUrENs="//Hier steht das Thema
             };
             LoginEntry loginEntry = new LoginEntry()
             {
                 Id = 1,
-                
+                Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
+                Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
+                CustomTopics = new Dictionary<string, string>(),
+                Subject = "WF0e1dHSkl4En+FMLl5Hs/xRRUGGPNgmNpwmGsUrENs=", //Hier steht das Thema
+                Password = "SehrsicheresPasswort",
+                Url = "https://sichereurl.com",
+                Username = "kreativerUsername",
+            }; LoginEntry loginEntry2 = new LoginEntry()
+            {
+                Id = 2,
                 Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
                 Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
                 CustomTopics = new Dictionary<string, string>(),
@@ -65,9 +84,38 @@ namespace PWManagerService.Controllers
                 Url = "https://sichereurl.com",
                 Username = "kreativerUsername",
             };
+            PaymentCardEntry paymentCard = new PaymentCardEntry()
+            {
+                Id = 1,
+                Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
+                Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
+                CustomTopics = new Dictionary<string, string>(),
+                Subject = "WF0e1dHSkl4En+FMLl5Hs/xRRUGGPNgmNpwmGsUrENs=", //Hier steht das Thema
+                CardType = "Kartentyp",
+                ExpirationDate = "Datum",
+                Number = "Nummer",
+                Owner = "Max Mustermann",
+                Pin = "1234"
+            }; PaymentCardEntry paymentCard2 = new PaymentCardEntry()
+            {
+                Id = 2,
+                Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
+                Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
+                CustomTopics = new Dictionary<string, string>(),
+                Subject = "WF0e1dHSkl4En+FMLl5Hs/xRRUGGPNgmNpwmGsUrENs=", //Hier steht das Thema
+                CardType = "Kartentyp",
+                ExpirationDate = "Datum",
+                Number = "Nummer",
+                Owner = "Max Mustermann",
+                Pin = "1234"
+            };
 
-            responseBody.Data.Add(noteEntry);
-            responseBody.Data.Add(loginEntry);
+            entries.SafeNoteEntryList.Add(noteEntry);
+            entries.SafeNoteEntryList.Add(noteEntry2);
+            entries.LoginEntryList.Add(loginEntry);
+            entries.LoginEntryList.Add(loginEntry2);
+            entries.PaymentCardEntryList.Add(paymentCard);
+            entries.PaymentCardEntryList.Add(paymentCard2);
             string jsonObject = JsonSerializer.Serialize<object>(responseBody);
             return Ok(jsonObject);
             //return responseBody;
