@@ -21,10 +21,4 @@ namespace PWManagerServiceModelEF
         public string Favourite { get; set; } = string.Empty;
     }
 
-    public class DataEntryLists
-    {
-        public List<LoginEntry>? LoginEntryList { get; set; } = new List<LoginEntry>();
-        public List<SafeNoteEntry>? SafeNoteEntryList { get; set; } = new List<SafeNoteEntry>();
-        public List<PaymentCardEntry>? PaymentCardEntryList { get; set; } = new List<PaymentCardEntry>();
-    }
 }

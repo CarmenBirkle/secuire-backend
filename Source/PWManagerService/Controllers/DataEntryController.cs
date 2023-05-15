@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PWManagerService.Model;
 using PWManagerServiceModelEF;
-using System.Text.Json;
+using Newtonsoft.Json;
+
+//using System.Text.Json;
 
 namespace PWManagerService.Controllers
 {
@@ -23,7 +25,7 @@ namespace PWManagerService.Controllers
             ResponseBody<DataEntry> response = new ResponseBody<DataEntry>();
             SafeNoteEntry entry = new SafeNoteEntry()
             {
-                Id = 1,
+                Id = id,
                 Comment = "nckUc+JbmNJK/7M9i8l5668vvMLYtdojJIqQk4nXc8A=", // verschlüsselterKommentar
                 Favourite = "lcOBKz4fRxFtmHcQd/nn4Q==",//true
                 CustomTopics = new Dictionary<string, string>(),
@@ -38,13 +40,11 @@ namespace PWManagerService.Controllers
 
         [HttpGet]
         [Route("all")]
-        public async Task<ActionResult<ResponseBody<DataEntryLists>>> GetAll()
+        public async Task<ActionResult<ResponseBody<List<DataEntry>>>> GetAll()
         {
-            ResponseBody<DataEntryLists> responseBody = new ResponseBody<DataEntryLists>();
-            DataEntryLists entries = new DataEntryLists();
+            ResponseBody<List<DataEntry>> responseBody = new ResponseBody<List<DataEntry>>();
 
-            responseBody.Data = entries;
-
+            responseBody.Data = new List<DataEntry>();
 
             SafeNoteEntry noteEntry = new SafeNoteEntry()
             {
@@ -110,13 +110,14 @@ namespace PWManagerService.Controllers
                 Pin = "1234"
             };
 
-            entries.SafeNoteEntryList.Add(noteEntry);
-            entries.SafeNoteEntryList.Add(noteEntry2);
-            entries.LoginEntryList.Add(loginEntry);
-            entries.LoginEntryList.Add(loginEntry2);
-            entries.PaymentCardEntryList.Add(paymentCard);
-            entries.PaymentCardEntryList.Add(paymentCard2);
-            string jsonObject = JsonSerializer.Serialize<object>(responseBody);
+
+            responseBody.Data.Add(noteEntry);
+            responseBody.Data.Add(noteEntry2);
+            responseBody.Data.Add(loginEntry);
+            responseBody.Data.Add(loginEntry2);
+            responseBody.Data.Add(paymentCard);
+            responseBody.Data.Add(paymentCard2);
+            string jsonObject = JsonConvert.SerializeObject(responseBody);
             return Ok(jsonObject);
             //return responseBody;
         }

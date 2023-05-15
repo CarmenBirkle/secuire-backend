@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using PWManagerServiceModelEF;
+using System.Net;
 
 namespace PWManagerService
 {
