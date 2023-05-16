@@ -33,5 +33,4 @@ namespace PWManagerServiceModelEF
         public string FieldName { get; set; } = string.Empty;
         public string FieldValue { get; set; } = string.Empty;
     }
-
 }
