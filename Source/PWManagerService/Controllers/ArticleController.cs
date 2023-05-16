@@ -76,7 +76,7 @@ namespace PWManagerService.Controllers
 
 
         [HttpPut]
-        public async Task<ActionResult> PostArticle(Article article)
+        public async Task<ActionResult> PutArticle(Article article)
         {
             // Hier Maßnahmen zum Anlegen des Artikels
             if (article == null)
@@ -87,6 +87,13 @@ namespace PWManagerService.Controllers
             article.ArticleCode = Guid.NewGuid().ToString();
 
             return CreatedAtAction(nameof(Get), new { id = article.ArticleCode }, article);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PostArticle(Article article)
+        {
+            return CreatedAtAction(nameof(Get), new { id = article.ArticleCode }, article);
+
         }
     }
 }

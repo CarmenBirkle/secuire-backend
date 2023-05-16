@@ -7,7 +7,9 @@ using Serilog.Core;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.RateLimiting;
-
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using JsonSubTypes;
+using Microsoft.OpenApi.Models;
 
 namespace PWManagerService
 {
@@ -35,7 +37,6 @@ namespace PWManagerService
 
             Configuration = builder.Configuration;
 
-            // Add services to the container.
             builder.Services.AddControllers();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
