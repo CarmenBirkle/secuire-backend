@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PWManagerService.Model;
 using PWManagerServiceModelEF;
 using Newtonsoft.Json;
 using PWManagerService.Factory;
