@@ -33,6 +33,11 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '7.x'
+
 - task: efcore-migration-script-generator-task@1
   inputs:
     projectpath: '$(Build.SourcesDirectory)/Source/PWManagerServiceModelEF/PWManagerServiceModelEF.csproj'
@@ -40,5 +45,5 @@ steps:
     startupprojectpath: '$(Build.SourcesDirectory)/Source/PWManagerService/PWManagerService.csproj'
     targetfolder: '$(build.artifactstagingdirectory)/migrations'
     build: false
-    installdependencies: true
+    #installdependencies: true
     
