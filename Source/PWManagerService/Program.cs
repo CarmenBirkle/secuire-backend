@@ -10,6 +10,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using JsonSubTypes;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace PWManagerService
 {
@@ -20,17 +21,17 @@ namespace PWManagerService
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             Logger logger = new LoggerConfiguration()
-  .ReadFrom.Configuration(builder.Configuration)
-  .Enrich.FromLogContext()
+              .ReadFrom.Configuration(builder.Configuration)
+              .Enrich.FromLogContext()
 
-#if DEBUG
-  .WriteTo.Console()
-  .WriteTo.File("Log\\debug.log")
-#endif
-#if RELEASE
-  .WriteTo.File("Log\\release.log")
-#endif
-  .CreateLogger();
+            #if DEBUG
+              .WriteTo.Console()
+              .WriteTo.File("Log\\debug.log")
+            #endif
+            #if RELEASE
+              .WriteTo.File("Log\\release.log")
+            #endif
+              .CreateLogger();
 
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog(logger);
@@ -42,6 +43,13 @@ namespace PWManagerService
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            //
+            builder.Services.AddControllersWithViews()
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
+
 
 
             // zur Limitierung von Aufrufen innerhalb eines Zeitraumes
@@ -59,7 +67,13 @@ namespace PWManagerService
                 }));
 
 
-            builder.Services.AddDbContext<DataContext>();
+            builder.Services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
+
+            // SeedData
+
+            DataContext dataContext = new DataContext();
+            dataContext.SeedData();
 
             WebApplication app = builder.Build();
 
@@ -78,7 +92,7 @@ namespace PWManagerService
             {
                 app.Logger.LogInformation("Environment: Production");
             }
-
+           
 
             app.UseHttpsRedirection();
 
@@ -88,6 +102,7 @@ namespace PWManagerService
             app.MapControllers();
 
             app.Run();
+
         }
 
         /// <summary>

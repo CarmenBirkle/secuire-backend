@@ -11,7 +11,7 @@ namespace PWManagerService
         public int? Id { get; set; }
         public string? Category { get; set; }
         public string? Subject { get; set; }
-        public List<CustomTopic>? CustomTopics { get; set; }
+        //public List<CustomTopic>? CustomTopics { get; set; }
         public string Favourite { get; set; }
         public string? Comment { get; set; }
         #endregion

@@ -7,11 +7,17 @@ using System.Threading.Tasks;
 
 namespace PWManagerServiceModelEF
 {
-    //public class User : DbContext
-    //{
-    //    public DbSet<DataEntry> DataEntries { get; set; }
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string PasswordHint { get; set; }
+        public DateTime AgbAcceptedAt { get; set; }
+        public int FailedLogins { get; set; }
+        public bool LockedLogin { get; set; }
+        public string Salt { get; set; }
 
-    //    public string Name { get; set; }
-
-    //}
+        public ICollection<DataEntry> DataEntries { get; set; }
+    }
 }

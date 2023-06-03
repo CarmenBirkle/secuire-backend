@@ -3,7 +3,7 @@
 namespace PWManagerService.Factory
 {
     public static class DataEntryFactory
-    {
+    {/*
         public static DataEntry InitEntry(DataEntryClientRequest clientData, out PostResponseBody<DataEntry> body, ILogger logger)
         {
             body = new PostResponseBody<DataEntry>();
@@ -26,11 +26,11 @@ namespace PWManagerService.Factory
                     break;
 
                 case EntryType.PAYMENTCARD:
-                    entry = new PaymentCardEntry();
+                    entry = new PaymentCard();
                     break;
 
                 case EntryType.LOGIN:
-                    entry = new LoginEntry();
+                    entry = new Login();
                     break;
 
                 default:
@@ -59,16 +59,16 @@ namespace PWManagerService.Factory
             entry.Comment = clientData.Comment;
             entry.Favourite = clientData.Favourite;
 
-            if(entry.GetType() == typeof(LoginEntry))
+            if(entry.GetType() == typeof(Login))
             {
-                LoginEntry lEntry = (LoginEntry)entry;
+                Login lEntry = (Login)entry;
                 lEntry.Username = clientData.Username;
                 lEntry.Password = clientData.Password;
                 lEntry.Url = clientData.Url;
             }
-            if(entry.GetType() == typeof(PaymentCardEntry))
+            if(entry.GetType() == typeof(PaymentCard))
             {
-                PaymentCardEntry pcEntry = (PaymentCardEntry)entry;
+                PaymentCard pcEntry = (PaymentCard)entry;
                 pcEntry.Owner = clientData.Owner;
                 pcEntry.Cardnumber = clientData.Cardnumber;
                 pcEntry.CardType = clientData.Cardtype;
@@ -92,5 +92,6 @@ namespace PWManagerService.Factory
             body.StatusCode = System.Net.HttpStatusCode.Created;
             body.Data = entry;
         }
+        */
     }
 }
