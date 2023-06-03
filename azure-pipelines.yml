@@ -40,3 +40,5 @@ steps:
     startupprojectpath: '$(Build.SourcesDirectory)/Source/PWManagerService/PWManagerService.csproj'
     targetfolder: '$(build.artifactstagingdirectory)/migrations'
     build: false
+    installdependencies: true
+    
