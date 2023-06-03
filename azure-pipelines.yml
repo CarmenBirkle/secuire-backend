@@ -50,7 +50,7 @@ steps:
   displayName: Generate SQL migration scripts
   inputs:
     command: custom
-    #workingDirectory: '$(Build.SourcesDirectory)/Source/PWManagerServiceModelEF/PWManagerServiceModelEF.csproj'
+    workingDirectory: '$(Build.SourcesDirectory)'
     custom: 'ef '
     arguments: migrations script -o $(Build.ArtifactStagingDirectory)/migrations/scripts.sql --context DataContext -v -i
 
