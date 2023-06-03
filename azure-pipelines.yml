@@ -32,3 +32,11 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- task: efcore-migration-script-generator-task@1
+  inputs:
+    projectpath: '$(Build.SourcesDirectory)/Source/PWManagerServiceModelEF/PWManagerServiceModelEF.csproj'
+    databasecontexts: 'dataContext'
+    startupprojectpath: '$(Build.SourcesDirectory)/Source/PWManagerService/PWManagerService.csproj'
+    targetfolder: '$(build.artifactstagingdirectory)/migrations'
+    build: false
