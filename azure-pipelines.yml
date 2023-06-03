@@ -48,19 +48,27 @@ steps:
     custom: 'ef '
     arguments: migrations script -o $(Build.ArtifactStagingDirectory)/migrations/scripts.sql --context DataContext -v -i
 
+#- task: SqlAzureDacpacDeployment@1
+#  displayName: Apply SQL migrations
+#  inputs:
+#    azureSubscription: '2891e653-8679-4f90-9105-59c14c5ce1c2'
+#    AuthenticationType: 'server'
+#    ServerName: 'isefpwmanagerdbserver.database.windows.net'
+#    DatabaseName: 'ISEFPWManagerDB'
+#    SqlUsername: 'isefsa'
+#    SqlPassword: '5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK'
+#    deployType: 'SqlTask'
+#    SqlFile: '$(Pipeline.Workspace)/drop/migrations/scripts.sql'
+#    IpDetectionMethod: 'AutoDetect'
+
 - task: SqlAzureDacpacDeployment@1
-  displayName: Apply SQL migrations
   inputs:
-    azureSubscription: '2891e653-8679-4f90-9105-59c14c5ce1c2'
-    AuthenticationType: 'server'
-    ServerName: 'isefpwmanagerdbserver.database.windows.net'
-    DatabaseName: 'ISEFPWManagerDB'
-    SqlUsername: 'isefsa'
-    SqlPassword: '5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK'
+    AuthenticationType: 'aadAuthenticationIntegrated'
+    ServerName: 'isef01-pw-manager-sql-server.database.windows.net'
+    DatabaseName: 'isef01-pw-manager-sql-db'
     deployType: 'SqlTask'
     SqlFile: '$(Pipeline.Workspace)/drop/migrations/scripts.sql'
     IpDetectionMethod: 'AutoDetect'
-    
 #- task: UseDotNet@2
 #  inputs:
 #    packageType: 'sdk'
