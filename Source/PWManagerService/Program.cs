@@ -52,6 +52,15 @@ namespace PWManagerService
 
 
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "https://isefpwmanagerwebapp.azurewebsites.net/");
+                    });
+            });
+
             // zur Limitierung von Aufrufen innerhalb eines Zeitraumes
             // Es wird je Aufruf unabhängig vom Endpunkt gezählt
             // abhängig vom Aufrufenden (IP-Adresse)?
@@ -72,7 +81,7 @@ namespace PWManagerService
 
             // SeedData
 
-            DataContext dataContext = new DataContext();
+            DataContext dataContext = new DataContext(Appsettings.Instance.Db_connectionstring);
             dataContext.SeedData();
 
             WebApplication app = builder.Build();

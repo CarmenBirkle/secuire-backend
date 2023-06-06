@@ -12,19 +12,23 @@ namespace PWManagerServiceModelEF
 {
     public class DataContext : DbContext
     {
-        public DataContext() { }
-        public DataContext(DbContextOptions<DataContext> options) : base(options) 
+        private string connectionString = "Server=isefpwmanagerdbserver.database.windows.net;Database=ISEFPWManagerDB;User Id=isefsa;Password=5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK;";
+        public DataContext(string connectionString) 
+        { 
+            this.connectionString = connectionString; 
+        }
+
+        public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-            
-        
+
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer("Server=isefpwmanagerdbserver.database.windows.net;Database=ISEFPWManagerDB;User Id=isefsa;Password=5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK;");
-            //optionsBuilder.UseSqlServer("Data Source = (localdb)\\MSSQLLocalDB;Initial Catalog = ISEF_TEST_LOCAL; Integrated Security = True; Connect Timeout = 30; Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
-        }        
+            optionsBuilder.UseSqlServer(connectionString);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,7 +59,7 @@ namespace PWManagerServiceModelEF
             if (!User.Any())
             {
                 var users = new[]
-                { 
+                {
                     new User
                     {
                         Username = "Dominik",
@@ -82,7 +86,7 @@ namespace PWManagerServiceModelEF
                 SaveChanges();
             }
 
-            if(!CardType.Any())
+            if (!CardType.Any())
             {
                 var cardTypes = new[]
                 {
@@ -111,13 +115,13 @@ namespace PWManagerServiceModelEF
                 SaveChanges();
 
                 var logins = new[]
-                { 
-                    new Login 
+                {
+                    new Login
                     {
                         DataEntryId = dataEntries[0].Id,
                         Username = "dominik",
                         Password = "passwort",
-                        Url = "https://eineseite.de" 
+                        Url = "https://eineseite.de"
                     },
                     new Login
                     {
@@ -131,9 +135,9 @@ namespace PWManagerServiceModelEF
                 Login.AddRange(logins);
                 SaveChanges();
 
-                var safeNote = new[] 
-                { 
-                    new SafeNote 
+                var safeNote = new[]
+                {
+                    new SafeNote
                     {
                         DataEntryId = dataEntries[1].Id,
                         Note = "Eine sichere Notiz mit Top Secret Inhalt."
