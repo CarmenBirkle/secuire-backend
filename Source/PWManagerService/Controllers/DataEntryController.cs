@@ -5,7 +5,7 @@ using PWManagerService.Factory;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PWManagerServiceModelEF.Model;
-using PWManagerService.Model;
+//using PWManagerService.Model;
 using System;
 
 //using System.Text.Json;
@@ -180,9 +180,9 @@ namespace PWManagerService.Controllers
         {
             List<object> dataEntries = new List<object>();
 
-            List<PaymentCard> paymentCards = await dataContext.PaymentCard.Include(d => d.DataEntry).ToListAsync();
-            List<SafeNote> safeNotes = await dataContext.SafeNote.Include(d => d.DataEntry).ToListAsync();
-            List<Login> logins = await dataContext.Login.Include(d => d.DataEntry).ToListAsync();
+            List<PaymentCard> paymentCards = dataContext.GetPaymentCard();
+            List<SafeNote> safeNotes = dataContext.GetSafeNote();
+            List<Login> logins = dataContext.GetLogin();
 
             dataEntries.AddRange(paymentCards);
             dataEntries.AddRange(safeNotes);
@@ -206,9 +206,7 @@ namespace PWManagerService.Controllers
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> GetAllPaymentCards()
         {
 
-            List<PaymentCard> paymentCards = await dataContext.PaymentCard
-                .Include(p => p.DataEntry)
-                .ToListAsync();
+            List<PaymentCard> paymentCards = dataContext.GetPaymentCard();
 
             if (paymentCards == null || paymentCards.Count == 0)
             {
@@ -226,11 +224,7 @@ namespace PWManagerService.Controllers
         {
             try
             {
-                PaymentCard paymentCard = dataContext.PaymentCard
-                .Where(p => p.DataEntryId == id)
-                .Include(p => p.DataEntry)
-                .ToList()
-                .Single();
+                PaymentCard paymentCard = dataContext.GetPaymentCard(id);
 
                 return Ok(paymentCard);
             }
@@ -257,9 +251,7 @@ namespace PWManagerService.Controllers
 
             await dataContext.DataEntry.AddAsync(dataEntry);
 
-
             dataContext.SaveChanges();
-
 
             PaymentCard paymentCard = new PaymentCard
             {
@@ -286,16 +278,9 @@ namespace PWManagerService.Controllers
         [Route("paymentcard/{id:int}")]
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterPaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
-            DataEntry dataEntry = dataContext.DataEntry
-                .Where(d => d.Id == id)
-                .ToList()
-                .Single();
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
 
-            PaymentCard paymentCard = dataContext.PaymentCard
-                .Where(p => p.DataEntryId == dataEntry.Id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            PaymentCard paymentCard = dataContext.GetPaymentCard(id);
 
             // Alter Data Entry:
             dataEntry.UserId = 1;
@@ -313,11 +298,7 @@ namespace PWManagerService.Controllers
 
             dataContext.SaveChanges();
 
-            PaymentCard alteredPaymentCard = dataContext.PaymentCard
-                .Where(p => p.DataEntryId == id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            PaymentCard alteredPaymentCard = dataContext.GetPaymentCard(id);
 
             return Ok(alteredPaymentCard);
         }
@@ -327,16 +308,9 @@ namespace PWManagerService.Controllers
         [Route("paymentcard/{id:int}")]
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeletePaymentCard(int id)
         {
-            DataEntry dataEntry = dataContext.DataEntry
-                .Where(d => d.Id == id)
-                .ToList()
-                .Single();
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
 
-            PaymentCard paymentCard = dataContext.PaymentCard
-                .Where(p => p.DataEntryId == dataEntry.Id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            PaymentCard paymentCard = dataContext.GetPaymentCard(id);
 
             dataContext.DataEntry.Remove(dataEntry);
             dataContext.PaymentCard.Remove(paymentCard);
@@ -354,11 +328,9 @@ namespace PWManagerService.Controllers
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> GetAllLogins()
         {
 
-            var result = await dataContext.Login
-                .Include(d => d.DataEntry)
-                .ToListAsync();
+            List<Login> logins = dataContext.GetLogin();
 
-            return Ok(result);
+            return Ok(logins);
         }
 
         // GetLoginById
@@ -366,13 +338,9 @@ namespace PWManagerService.Controllers
         [Route("login/{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetLoginById(int id)
         {
-            var result = dataContext.Login
-                .Where(l => l.DataEntryId == id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            Login login = dataContext.GetLogin(id);
 
-            return Ok(result);
+            return Ok(login);
 
         }
 
@@ -390,8 +358,8 @@ namespace PWManagerService.Controllers
             };
 
             await dataContext.DataEntry.AddAsync(dataEntry);
-            dataContext.SaveChanges();
 
+            dataContext.SaveChanges();
 
             Login login = new Login
             {
@@ -415,16 +383,9 @@ namespace PWManagerService.Controllers
         [Route("login/{id:int}")]
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterLoginCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
-            DataEntry dataEntry = dataContext.DataEntry
-                .Where(d => d.Id == id)
-                .ToList()
-                .Single();
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
 
-            Login login = dataContext.Login
-                .Where(l => l.DataEntryId == dataEntry.Id)
-                .Include(l => l.DataEntry)
-                .ToList()
-                .Single();
+            Login login = dataContext.GetLogin(id);
 
             // Alter Data Entry:
             dataEntry.UserId = 1;
@@ -439,11 +400,7 @@ namespace PWManagerService.Controllers
 
             dataContext.SaveChanges();
 
-            Login alteredLogin = dataContext.Login
-                .Where(l => l.DataEntryId == id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            Login alteredLogin = dataContext.GetLogin(id);
 
             return Ok(alteredLogin);
         }
@@ -453,31 +410,132 @@ namespace PWManagerService.Controllers
         [Route("login/{id:int}")]
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeleteLogin(int id)
         {
-            DataEntry dataEntry = dataContext.DataEntry
-                .Where(d => d.Id == id)
-                .ToList()
-                .Single();
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
 
-            Login login = dataContext.Login
-                .Where(l => l.DataEntryId == dataEntry.Id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            Login login = dataContext.GetLogin(id);
 
             dataContext.DataEntry.Remove(dataEntry);
             dataContext.Login.Remove(login);
 
             dataContext.SaveChanges();
 
-            return Ok("Payment Card got deleted successfully");
+            return Ok("Login got deleted successfully");
         }
         #endregion
 
         #region SafeNote Methods
+        // GetAllSafeNotes
+        [HttpGet]
+        [Route("safenote/all")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> GetAllSafeNotes()
+        {
 
+            List<SafeNote> safeNotes = dataContext.GetSafeNote();
 
+            if (safeNotes == null || safeNotes.Count == 0)
+            {
+                string ErrorMessage = "No Safe Notes found.";
+                return NotFound(ErrorMessage);
+            }
 
+            return Ok(safeNotes);
+        }
+
+        // GetSafeNoteById
+        [HttpGet]
+        [Route("safenote/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> GetSafeNoteById(int id)
+        {
+            try
+            {
+                SafeNote safeNote = dataContext.GetSafeNote(id);
+
+                return Ok(safeNote);
+            }
+            catch (ArgumentNullException)
+            {
+                string ErrorMessage = "No Safe Note with the requested Id could be found.";
+                return NotFound(ErrorMessage);
+            }
+
+        }
+
+        // PostNewPaymentCard
+        [HttpPost]
+        [Route("safenote/new")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreateSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest)
+        {
+            DataEntry dataEntry = new DataEntry
+            {
+                UserId = 1,
+                Comment = dataEntryClientRequest.Comment,
+                Favourite = dataEntryClientRequest.Favourite,
+                Subject = dataEntryClientRequest.Subject
+            };
+
+            await dataContext.DataEntry.AddAsync(dataEntry);
+
+            dataContext.SaveChanges();
+
+            SafeNote safeNote = new SafeNote
+            {
+                DataEntryId = dataEntry.Id,
+                Note = dataEntryClientRequest.Note,
+            };
+
+            await dataContext.SafeNote.AddAsync(safeNote);
+
+            dataContext.SaveChanges();
+
+            return CreatedAtAction(nameof(GetAllPaymentCards), new { id = safeNote.DataEntryId }, safeNote);
+
+        }
+
+        // Alter SafeNote
+        [HttpPut]
+        [Route("safenote/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        {
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
+
+            SafeNote safenote = dataContext.GetSafeNote(id);
+
+            // Alter Data Entry:
+            dataEntry.UserId = 1;
+            dataEntry.Comment = dataEntryClientRequest.Comment;
+            dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            dataEntry.Subject = dataEntryClientRequest.Subject;
+
+            // Alter SafeNote:
+            safenote.Note = dataEntryClientRequest.Note;
+
+            dataContext.SaveChanges();
+
+            SafeNote alteredSafeNote = dataContext.GetSafeNote(id);
+
+            return Ok(alteredSafeNote);
+        }
+
+        // Delete SafeNote
+        [HttpDelete]
+        [Route("safenote/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeleteSafeNote(int id)
+        {
+            DataEntry dataEntry = dataContext.GetDataEntry(id);
+
+            SafeNote safeNote = dataContext.GetSafeNote(id);
+
+            dataContext.DataEntry.Remove(dataEntry);
+            dataContext.SafeNote.Remove(safeNote);
+
+            dataContext.SaveChanges();
+
+            return Ok("Safe Note got deleted successfully");
+        }
         #endregion
+
+        #region User Methods
+
 
 
 

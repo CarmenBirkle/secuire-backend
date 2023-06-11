@@ -54,6 +54,60 @@ namespace PWManagerServiceModelEF
 
         public DbSet<CardType> CardType { get; set; }
 
+        public DataEntry GetDataEntry(int id)
+        {
+            return DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
+        }
+        public List<PaymentCard> GetPaymentCard()
+        {
+            return PaymentCard
+                .Include(d => d.DataEntry)
+                .ToList();
+        }
+        public PaymentCard GetPaymentCard(int id)
+        {
+            return PaymentCard
+                .Where(p => p.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+        }
+
+        public List<Login> GetLogin()
+        {
+            return Login
+                .Include(d => d.DataEntry)
+                .ToList();
+        }
+
+        public Login GetLogin(int id)
+        {
+            return Login
+                .Where(l => l.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+        }
+
+        public List<SafeNote> GetSafeNote()
+        {
+            return SafeNote
+                .Include(d => d.DataEntry)
+                .ToList();
+        }
+
+        public SafeNote GetSafeNote(int id)
+        {
+            return SafeNote
+                .Where(s => s.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+        }
+
         public void SeedData()
         {
             if (!User.Any())
