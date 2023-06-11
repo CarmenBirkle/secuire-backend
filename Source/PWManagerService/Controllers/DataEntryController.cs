@@ -172,6 +172,7 @@ namespace PWManagerService.Controllers
                     return Ok(responseBody.Data);
                 }*/
 
+        #region DataEntries Methods
         // Get All DataEntries
         [HttpGet]
         [Route("dataentry/all")]
@@ -179,31 +180,43 @@ namespace PWManagerService.Controllers
         {
             List<object> dataEntries = new List<object>();
 
-            var paymentCards = await dataContext.PaymentCard.Include(d => d.DataEntry).ToListAsync();
-            var safeNotes = await dataContext.SafeNote.Include(d => d.DataEntry).ToListAsync();
-            var logins = await dataContext.Login.Include(d => d.DataEntry).ToListAsync();
+            List<PaymentCard> paymentCards = await dataContext.PaymentCard.Include(d => d.DataEntry).ToListAsync();
+            List<SafeNote> safeNotes = await dataContext.SafeNote.Include(d => d.DataEntry).ToListAsync();
+            List<Login> logins = await dataContext.Login.Include(d => d.DataEntry).ToListAsync();
 
             dataEntries.AddRange(paymentCards);
             dataEntries.AddRange(safeNotes);
             dataEntries.AddRange(logins);
 
-            //var result = await dataContext.DataEntry.ToListAsync();
-
+            if (dataEntries == null || dataEntries.Count == 0)
+            {
+                string ErrorMessage = "No Data Entries found.";
+                return NotFound(ErrorMessage);
+            }
 
             return Ok(dataEntries);
         }
 
+        #endregion
+
+        #region PaymentCard Methods
         // GetAllPaymentCards
         [HttpGet]
         [Route("paymentcard/all")]
         public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> GetAllPaymentCards()
         {
 
-            var result = await dataContext.PaymentCard
-                .Include(d => d.DataEntry)
+            List<PaymentCard> paymentCards = await dataContext.PaymentCard
+                .Include(p => p.DataEntry)
                 .ToListAsync();
 
-            return Ok(result);
+            if (paymentCards == null || paymentCards.Count == 0)
+            {
+                string ErrorMessage = "No Payment Cards found.";
+                return NotFound(ErrorMessage);
+            }
+
+            return Ok(paymentCards);
         }
 
         // GetPaymentCardById
@@ -211,8 +224,150 @@ namespace PWManagerService.Controllers
         [Route("paymentcard/{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetPaymentCardById(int id)
         {
-            var result = dataContext.PaymentCard
+            try
+            {
+                PaymentCard paymentCard = dataContext.PaymentCard
                 .Where(p => p.DataEntryId == id)
+                .Include(p => p.DataEntry)
+                .ToList()
+                .Single();
+
+                return Ok(paymentCard);
+            }
+            catch (ArgumentNullException)
+            {
+                string ErrorMessage = "No Payment Card with the requested Id could be found.";
+                return NotFound(ErrorMessage);
+            }
+
+        }
+
+        // PostNewPaymentCard
+        [HttpPost]
+        [Route("paymentcard/new")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreatePaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest)
+        {
+            DataEntry dataEntry = new DataEntry
+            {
+                UserId = 1,
+                Comment = dataEntryClientRequest.Comment,
+                Favourite = dataEntryClientRequest.Favourite,
+                Subject = dataEntryClientRequest.Subject
+            };
+
+            await dataContext.DataEntry.AddAsync(dataEntry);
+
+
+            dataContext.SaveChanges();
+
+
+            PaymentCard paymentCard = new PaymentCard
+            {
+                DataEntryId = dataEntry.Id,
+                Owner = dataEntryClientRequest.Owner,
+                Number = dataEntryClientRequest.CardNumber,
+                CardTypeId = (int)dataEntryClientRequest.CardTypeId,
+                ExpirationDate = (DateTime)dataEntryClientRequest.ExpirationDate,
+                Pin = dataEntryClientRequest.Pin,
+                Cvv = dataEntryClientRequest.Cvv
+            };
+
+            await dataContext.PaymentCard.AddAsync(paymentCard);
+
+            dataContext.SaveChanges();
+
+            //return Ok("Created");
+            return CreatedAtAction(nameof(GetAllPaymentCards), new { id = paymentCard.DataEntryId }, paymentCard);
+
+        }
+
+        // Alter PaymentCard
+        [HttpPut]
+        [Route("paymentcard/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterPaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        {
+            DataEntry dataEntry = dataContext.DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
+
+            PaymentCard paymentCard = dataContext.PaymentCard
+                .Where(p => p.DataEntryId == dataEntry.Id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+            // Alter Data Entry:
+            dataEntry.UserId = 1;
+            dataEntry.Comment = dataEntryClientRequest.Comment;
+            dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            dataEntry.Subject = dataEntryClientRequest.Subject;
+
+            // Alter PaymentCard:
+            paymentCard.Owner = dataEntryClientRequest.Owner;
+            paymentCard.Number = dataEntryClientRequest.CardNumber;
+            paymentCard.CardTypeId = 1;//(int)dataEntryClientRequest.CardTypeId;
+            paymentCard.ExpirationDate = (DateTime)dataEntryClientRequest.ExpirationDate;
+            paymentCard.Pin = dataEntryClientRequest.Pin;
+            paymentCard.Cvv = dataEntryClientRequest.Cvv;
+
+            dataContext.SaveChanges();
+
+            PaymentCard alteredPaymentCard = dataContext.PaymentCard
+                .Where(p => p.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+            return Ok(alteredPaymentCard);
+        }
+
+        // Delete PaymentCard
+        [HttpDelete]
+        [Route("paymentcard/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeletePaymentCard(int id)
+        {
+            DataEntry dataEntry = dataContext.DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
+
+            PaymentCard paymentCard = dataContext.PaymentCard
+                .Where(p => p.DataEntryId == dataEntry.Id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+            dataContext.DataEntry.Remove(dataEntry);
+            dataContext.PaymentCard.Remove(paymentCard);
+
+            dataContext.SaveChanges();
+
+            return Ok("Payment Card got deleted successfully");
+        }
+        #endregion
+
+        #region Login Methods
+        // GetAllLogins
+        [HttpGet]
+        [Route("login/all")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> GetAllLogins()
+        {
+
+            var result = await dataContext.Login
+                .Include(d => d.DataEntry)
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+        // GetLoginById
+        [HttpGet]
+        [Route("login/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> GetLoginById(int id)
+        {
+            var result = dataContext.Login
+                .Where(l => l.DataEntryId == id)
                 .Include(d => d.DataEntry)
                 .ToList()
                 .Single();
@@ -220,42 +375,109 @@ namespace PWManagerService.Controllers
             return Ok(result);
 
         }
-            // PostNewDataEntry
-            [HttpPost]
-        [Route("paymentcard/new")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreatePaymentCard([FromBody] PaymentCardClientRequest paymentCardClientRequest)
+
+        // PostNewLogin
+        [HttpPost]
+        [Route("login/new")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreateLogin([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
             DataEntry dataEntry = new DataEntry
             {
                 UserId = 1,
-                Comment = paymentCardClientRequest.Comment,
-                Favourite = paymentCardClientRequest.Favourite,
-                Subject = paymentCardClientRequest.Subject
+                Comment = dataEntryClientRequest.Comment,
+                Favourite = dataEntryClientRequest.Favourite,
+                Subject = dataEntryClientRequest.Subject
             };
 
             await dataContext.DataEntry.AddAsync(dataEntry);
             dataContext.SaveChanges();
 
 
-            PaymentCard paymentCard = new PaymentCard
+            Login login = new Login
             {
                 DataEntryId = dataEntry.Id,
-                Owner = paymentCardClientRequest.Owner,
-                Number = paymentCardClientRequest.Number,
-                CardTypeId = paymentCardClientRequest.CardTypeId,
-                ExpirationDate = paymentCardClientRequest.ExpirationDate,
-                Pin = paymentCardClientRequest.Pin,
-                Cvv = paymentCardClientRequest.Cvv
+                Username = dataEntryClientRequest.Username,
+                Password = dataEntryClientRequest.Password,
+                Url = dataEntryClientRequest.Url
             };
-            
-            await dataContext.PaymentCard.AddAsync(paymentCard);
-            
+
+            await dataContext.Login.AddAsync(login);
+
             dataContext.SaveChanges();
 
-            return Ok("Created");
-            //return CreatedAtAction(nameof(GetAllPaymentCards), new { id = entry.Id }, entry);
+            //return Ok("Created");
+            return CreatedAtAction(nameof(GetAllLogins), new { id = login.DataEntryId }, login);
 
         }
+
+        // Alter Login
+        [HttpPut]
+        [Route("login/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterLoginCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        {
+            DataEntry dataEntry = dataContext.DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
+
+            Login login = dataContext.Login
+                .Where(l => l.DataEntryId == dataEntry.Id)
+                .Include(l => l.DataEntry)
+                .ToList()
+                .Single();
+
+            // Alter Data Entry:
+            dataEntry.UserId = 1;
+            dataEntry.Comment = dataEntryClientRequest.Comment;
+            dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            dataEntry.Subject = dataEntryClientRequest.Subject;
+
+            // Alter Login:
+            login.Username = dataEntryClientRequest.Username;
+            login.Password = dataEntryClientRequest.Password;
+            login.Url = dataEntryClientRequest.Url;
+
+            dataContext.SaveChanges();
+
+            Login alteredLogin = dataContext.Login
+                .Where(l => l.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+            return Ok(alteredLogin);
+        }
+
+        // Delete Login
+        [HttpDelete]
+        [Route("login/{id:int}")]
+        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeleteLogin(int id)
+        {
+            DataEntry dataEntry = dataContext.DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
+
+            Login login = dataContext.Login
+                .Where(l => l.DataEntryId == dataEntry.Id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+            dataContext.DataEntry.Remove(dataEntry);
+            dataContext.Login.Remove(login);
+
+            dataContext.SaveChanges();
+
+            return Ok("Payment Card got deleted successfully");
+        }
+        #endregion
+
+        #region SafeNote Methods
+
+
+
+        #endregion
 
 
 
