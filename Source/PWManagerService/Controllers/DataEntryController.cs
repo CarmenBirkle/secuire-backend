@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using PWManagerServiceModelEF.Model;
 //using PWManagerService.Model;
 using System;
+using Serilog;
 
 //using System.Text.Json;
 
@@ -222,24 +223,23 @@ namespace PWManagerService.Controllers
         [Route("paymentcard/{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetPaymentCardById(int id)
         {
-            try
-            {
+
                 PaymentCard paymentCard = dataContext.GetPaymentCard(id);
 
+                if(paymentCard == null)
+                {
+                    string errorMessage = "No Payment Card with the requested Id could be found.";
+                    return NotFound(errorMessage);
+                }
                 return Ok(paymentCard);
-            }
-            catch (ArgumentNullException)
-            {
-                string ErrorMessage = "No Payment Card with the requested Id could be found.";
-                return NotFound(ErrorMessage);
-            }
+
 
         }
 
         // PostNewPaymentCard
         [HttpPost]
         [Route("paymentcard/new")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreatePaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> CreatePaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
             DataEntry dataEntry = new DataEntry
             {
@@ -276,11 +276,23 @@ namespace PWManagerService.Controllers
         // Alter PaymentCard
         [HttpPut]
         [Route("paymentcard/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterPaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> AlterPaymentCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
+            if (dataEntry == null)
+            {
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             PaymentCard paymentCard = dataContext.GetPaymentCard(id);
+
+            if(paymentCard == null)
+            {
+                string errorMessage = "No Payment Card with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
 
             // Alter Data Entry:
             dataEntry.UserId = 1;
@@ -300,17 +312,35 @@ namespace PWManagerService.Controllers
 
             PaymentCard alteredPaymentCard = dataContext.GetPaymentCard(id);
 
+            if(alteredPaymentCard == null)
+            {
+                string errorMessage = "No Payment Card with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             return Ok(alteredPaymentCard);
         }
 
         // Delete PaymentCard
         [HttpDelete]
         [Route("paymentcard/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeletePaymentCard(int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> DeletePaymentCard(int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
+            if (dataEntry == null)
+            {
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             PaymentCard paymentCard = dataContext.GetPaymentCard(id);
+
+            if (paymentCard == null)
+            {
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
 
             dataContext.DataEntry.Remove(dataEntry);
             dataContext.PaymentCard.Remove(paymentCard);
@@ -330,6 +360,12 @@ namespace PWManagerService.Controllers
 
             List<Login> logins = dataContext.GetLogin();
 
+            if(logins == null || logins.Count == 0)
+            {
+                string errorMessage = "No Logins could be found.";
+                return NotFound(errorMessage);
+            }
+
             return Ok(logins);
         }
 
@@ -347,7 +383,7 @@ namespace PWManagerService.Controllers
         // PostNewLogin
         [HttpPost]
         [Route("login/new")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreateLogin([FromBody] DataEntryClientRequest dataEntryClientRequest)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> CreateLogin([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
             DataEntry dataEntry = new DataEntry
             {
@@ -381,11 +417,17 @@ namespace PWManagerService.Controllers
         // Alter Login
         [HttpPut]
         [Route("login/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterLoginCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> AlterLoginCard([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
             Login login = dataContext.GetLogin(id);
+
+            if (login == null)
+            {
+                string errorMessage = "No Login with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
 
             // Alter Data Entry:
             dataEntry.UserId = 1;
@@ -402,17 +444,36 @@ namespace PWManagerService.Controllers
 
             Login alteredLogin = dataContext.GetLogin(id);
 
+            if (alteredLogin == null)
+            {
+                string errorMessage = "No Login with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             return Ok(alteredLogin);
         }
 
         // Delete Login
         [HttpDelete]
         [Route("login/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeleteLogin(int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> DeleteLogin(int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
+            if(dataEntry == null)
+            {
+
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             Login login = dataContext.GetLogin(id);
+
+            if (login == null)
+            {
+                string errorMessage = "No Login with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
 
             dataContext.DataEntry.Remove(dataEntry);
             dataContext.Login.Remove(login);
@@ -445,25 +506,23 @@ namespace PWManagerService.Controllers
         [HttpGet]
         [Route("safenote/{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetSafeNoteById(int id)
-        {
-            try
-            {
-                SafeNote safeNote = dataContext.GetSafeNote(id);
+        {         
+            SafeNote safeNote = dataContext.GetSafeNote(id);
 
-                return Ok(safeNote);
-            }
-            catch (ArgumentNullException)
+            if(safeNote == null)
             {
-                string ErrorMessage = "No Safe Note with the requested Id could be found.";
-                return NotFound(ErrorMessage);
+                string errorMessage = "No Safe Note with the requested Id could be found.";
+                return NotFound(errorMessage);
             }
+
+            return Ok(safeNote);
 
         }
 
         // PostNewPaymentCard
         [HttpPost]
         [Route("safenote/new")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> CreateSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> CreateSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
             DataEntry dataEntry = new DataEntry
             {
@@ -494,11 +553,23 @@ namespace PWManagerService.Controllers
         // Alter SafeNote
         [HttpPut]
         [Route("safenote/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> AlterSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> AlterSafeNote([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
+            if(dataEntry == null)
+            {
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             SafeNote safenote = dataContext.GetSafeNote(id);
+
+            if(safenote == null)
+            {
+                string errorMessage = "No Safe Note with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
 
             // Alter Data Entry:
             dataEntry.UserId = 1;
@@ -513,17 +584,36 @@ namespace PWManagerService.Controllers
 
             SafeNote alteredSafeNote = dataContext.GetSafeNote(id);
 
+            if(alteredSafeNote == null)
+            {
+                string errorMessage = "No Safe Note with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             return Ok(alteredSafeNote);
         }
 
         // Delete SafeNote
         [HttpDelete]
         [Route("safenote/{id:int}")]
-        public async Task<ActionResult<GetResponseBody<List<DataEntry>>>> DeleteSafeNote(int id)
+        public async Task<ActionResult<GetResponseBody<DataEntry>>> DeleteSafeNote(int id)
         {
             DataEntry dataEntry = dataContext.GetDataEntry(id);
 
+            if(dataEntry == null)
+            {
+                string errorMessage = "No Data Entry with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+
             SafeNote safeNote = dataContext.GetSafeNote(id);
+
+            if(safeNote == null)
+            {
+                string errorMessage = "No Safe Note with the requested Id could be found.";
+                return NotFound(errorMessage);
+            }
+            
 
             dataContext.DataEntry.Remove(dataEntry);
             dataContext.SafeNote.Remove(safeNote);
@@ -535,7 +625,8 @@ namespace PWManagerService.Controllers
         #endregion
 
         #region User Methods
-
+        
+        #endregion
 
 
 

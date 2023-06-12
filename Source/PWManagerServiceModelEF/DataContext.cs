@@ -56,56 +56,124 @@ namespace PWManagerServiceModelEF
 
         public DataEntry GetDataEntry(int id)
         {
-            return DataEntry
+            try
+            {
+                DataEntry dataEntry = DataEntry
                 .Where(d => d.Id == id)
                 .ToList()
                 .Single();
+
+                return dataEntry;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+           
         }
         public List<PaymentCard> GetPaymentCard()
         {
-            return PaymentCard
+            try
+            {
+                List<PaymentCard> paymentCards = PaymentCard
                 .Include(d => d.DataEntry)
                 .ToList();
+
+                return paymentCards;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
         }
         public PaymentCard GetPaymentCard(int id)
         {
-            return PaymentCard
-                .Where(p => p.DataEntryId == id)
-                .Include(d => d.DataEntry)
-                .ToList()
-                .Single();
+            try
+            {
+                PaymentCard paymentCard = PaymentCard
+                                .Where(p => p.DataEntryId == id)
+                                .Include(d => d.DataEntry)
+                                .ToList()
+                                .Single();
+
+                return paymentCard;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
         }
 
         public List<Login> GetLogin()
         {
-            return Login
+            try
+            {
+                List<Login> logins = Login
                 .Include(d => d.DataEntry)
                 .ToList();
+
+                return logins;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
         }
 
         public Login GetLogin(int id)
         {
-            return Login
+            try
+            {
+                Login login = Login
                 .Where(l => l.DataEntryId == id)
                 .Include(d => d.DataEntry)
                 .ToList()
                 .Single();
+
+                return login;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
         }
 
         public List<SafeNote> GetSafeNote()
         {
-            return SafeNote
+            try
+            {
+                List<SafeNote> safeNotes = SafeNote
                 .Include(d => d.DataEntry)
                 .ToList();
+
+                return safeNotes;
+            }
+            catch (InvalidOperationException)
+            {
+
+                return null;
+            }
+
         }
 
         public SafeNote GetSafeNote(int id)
         {
-            return SafeNote
+            try
+            {
+                SafeNote safeNote = SafeNote
                 .Where(s => s.DataEntryId == id)
                 .Include(d => d.DataEntry)
                 .ToList()
                 .Single();
+
+                return safeNote;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
         }
 
         public void SeedData()
