@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using PWManagerServiceModelEF.Model;
 using PWManagerService.Model;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 //using System.Text.Json;
 
@@ -173,8 +174,8 @@ namespace PWManagerService.Controllers
                 }*/
 
         // Get All DataEntries
-        [HttpGet]
-        [Route("dataentry/all")]
+        [HttpGet, Authorize]
+        [Route("all")]
         public async Task<ActionResult<GetResponseBody<List<object>>>> GetAllDataEntries()
         {
             List<object> dataEntries = new List<object>();

@@ -11,6 +11,13 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using JsonSubTypes;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Identity;
+
+
 
 namespace PWManagerService
 {
@@ -20,17 +27,17 @@ namespace PWManagerService
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            Logger logger = new LoggerConfiguration()
+            Serilog.Core.Logger logger = new LoggerConfiguration()
               .ReadFrom.Configuration(builder.Configuration)
               .Enrich.FromLogContext()
 
-            #if DEBUG
+#if DEBUG
               .WriteTo.Console()
               .WriteTo.File("Log\\debug.log")
-            #endif
-            #if RELEASE
+#endif
+#if RELEASE
               .WriteTo.File("Log\\release.log")
-            #endif
+#endif
               .CreateLogger();
 
             builder.Logging.ClearProviders();
@@ -43,6 +50,39 @@ namespace PWManagerService
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ClockSkew = TimeSpan.Zero,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = ApiWithAuthBackendString,
+                        ValidAudience = ApiWithAuthBackendString,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            //ToDO: näher mit befassen -> .env oder so auslagern
+                            Encoding.UTF8.GetBytes("!SomethingSecret!")
+                        ),
+                    };
+                });
+
+            builder.Services.AddIdentityCore<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+            })
+                .AddEntityFrameworkStores<DataContext>();
 
             //
             builder.Services.AddControllersWithViews()
@@ -101,11 +141,12 @@ namespace PWManagerService
             {
                 app.Logger.LogInformation("Environment: Production");
             }
-           
+
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
+            app.UseAuthentication();
 
 
             app.MapControllers();
@@ -118,8 +159,7 @@ namespace PWManagerService
         /// Builder/App Configuration
         /// </summary>
         public static IConfiguration Configuration { get; private set; }
+        public const string ApiWithAuthBackendString = "apiWithAuthBackend";//ToDo: Appsettings auslagern
 
-
-      
     }
 }
