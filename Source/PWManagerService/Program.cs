@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Identity.Client;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace PWManagerService
@@ -122,7 +122,7 @@ namespace PWManagerService
             // SeedData
 
             DataContext dataContext = new DataContext(Appsettings.Instance.Db_connectionstring);
-            dataContext.SeedData();
+            //dataContext.SeedData();
 
             WebApplication app = builder.Build();
 
