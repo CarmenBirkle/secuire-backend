@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace PWManagerServiceModelEF
 {
-    public class User
+    public class User : IdentityUser
     {
-        public int Id { get; set; }
-        public string Email { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string PasswordHint { get; set; }
+        //public int Id { get; set; }
+        //public string Email { get; set; }
+        //public string UserName { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string PasswordHint { get; set; } = string.Empty;
         public DateTime AgbAcceptedAt { get; set; }
         public int FailedLogins { get; set; }
         public bool LockedLogin { get; set; }
-        public string Salt { get; set; }
+        public string Salt { get; set; } = string.Empty;
 
-        public ICollection<DataEntry> DataEntries { get; set; }
+        public ICollection<DataEntry> DataEntries { get; set; } = new List<DataEntry>();
     }
 }

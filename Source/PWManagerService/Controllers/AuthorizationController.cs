@@ -12,8 +12,9 @@ namespace PWManagerService.Controllers
         private ILogger<AuthorizationController> logger;
         private readonly UserManager<IdentityUser> userManager;
 
-        public AuthorizationController(UserManager<IdentityUser> userManager)
+        public AuthorizationController(UserManager<IdentityUser> userManager, ILogger<AuthorizationController> logger)
         {
+            this.logger = logger;
             this.userManager = userManager;
         }
 
@@ -25,7 +26,7 @@ namespace PWManagerService.Controllers
             User user = new User()
             {
                 Email = mail,
-                Username = username,
+                UserName = username,
                 Password = password,
                 PasswordHint = passwordHint,
                 AgbAcceptedAt = agbAcceptedAt,
@@ -35,24 +36,23 @@ namespace PWManagerService.Controllers
             };
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
-            var result = await userManager.CreateAsync(
-                new IdentityUser { Email = user.Email },
-                user.Password
-            );
+            
+            IdentityResult result = await userManager.CreateAsync(
+                user, user.Password);
+
+
             if (result.Succeeded)
             {
                 user.Password = "";
                 return CreatedAtAction(nameof(Register), new { email = user.Email }, user);
             }
+
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(error.Code, error.Description);
             }
             return BadRequest(ModelState);
         }
-
     }
 }

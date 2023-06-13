@@ -84,6 +84,8 @@ namespace PWManagerService
             })
                 .AddEntityFrameworkStores<DataContext>();
 
+            builder.Services.AddScoped<TokenService, TokenService>();
+
             //
             builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
