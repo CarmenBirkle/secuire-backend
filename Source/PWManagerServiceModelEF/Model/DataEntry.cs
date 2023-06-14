@@ -18,8 +18,9 @@ namespace PWManagerServiceModelEF
 
         public int UserId { get; set; }
         public string Subject { get; set; }
-        public bool Favourite { get; set; }
+        public string Favourite { get; set; }
         public string Comment { get; set; }
-        public ICollection<CustomTopic> CustomTopics { get; set; }
+        public string SelectedIcon { get; set; }
+        public string CustomTopics { get; set; }
     }
 }

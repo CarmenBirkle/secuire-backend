@@ -203,8 +203,6 @@ namespace PWManagerService.Controllers
         [Route("{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetDataEntryById(int id)
         {
-            // CUSTOM TOPICS FEHLEN, MUSS ERST IM DATENMODELL GEÄNDERT WERDEN ZU STRING!
-
             PaymentCard paymentCard = dataContext.GetPaymentCard(id);
             SafeNote safeNote = dataContext.GetSafeNote(id);
             Login login = dataContext.GetLogin(id);
