@@ -8,8 +8,6 @@ namespace PWManagerService
         public DataEntryClientRequest() { }
 
         #region General
-
-        [DefaultValue("test kategorie")]
         public string? Category { get; set; }
         public string? Subject { get; set; }
         //public List<CustomTopic>? CustomTopics { get; set; }
