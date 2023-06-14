@@ -14,23 +14,23 @@ namespace PWManagerService.Model
 
         private static readonly List<string> notes = new List<string> { "Note 1", "Note 2", "Note 3", "Note 4", "Note 5" };
 
-        public static List<object> CreateRandomSafeNote()
-        {
-            DataEntry dataEntry = new DataEntry()
-            {
-                UserId = userIds.ElementAt(random.Next(0,userIds.Count)),
-                Subject = subjects.ElementAt(random.Next(0,subjects.Count)),
-                Favourite = favourite.ElementAt(random.Next(0,favourite.Count)),
-                Comment = comments.ElementAt(random.Next(0,comments.Count))
-            };
+        //public static List<object> CreateRandomSafeNote()
+        //{
+        //    DataEntry dataEntry = new DataEntry()
+        //    {
+        //        UserId = userIds.ElementAt(random.Next(0,userIds.Count)),
+        //        Subject = subjects.ElementAt(random.Next(0,subjects.Count)),
+        //        Favourite = favourite.ElementAt(random.Next(0,favourite.Count)),
+        //        Comment = comments.ElementAt(random.Next(0,comments.Count))
+        //    };
 
-            SafeNote safeNote = new SafeNote()
-            {
-                Note = notes.ElementAt(random.Next(0, notes.Count))
-            };
+        //    SafeNote safeNote = new SafeNote()
+        //    {
+        //        Note = notes.ElementAt(random.Next(0, notes.Count))
+        //    };
 
-            return new List<object> { dataEntry, safeNote };
-        }
+        //    return new List<object> { dataEntry, safeNote };
+        //}
 
     }
 }

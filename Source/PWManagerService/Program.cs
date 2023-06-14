@@ -79,11 +79,6 @@ namespace PWManagerService
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
 
-            // SeedData
-
-            DataContext dataContext = new DataContext(Appsettings.Instance.Db_connectionstring);
-            dataContext.SeedData();
-
             WebApplication app = builder.Build();
 
             // aktiviert die Limitierung

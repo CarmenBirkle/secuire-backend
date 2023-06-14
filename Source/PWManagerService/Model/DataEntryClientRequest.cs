@@ -10,9 +10,10 @@ namespace PWManagerService
         #region General
         public string? Category { get; set; }
         public string? Subject { get; set; }
-        //public List<CustomTopic>? CustomTopics { get; set; }
-        public bool Favourite { get; set; }
+        public string? CustomTopics { get; set; }
+        public string? Favourite { get; set; }
         public string? Comment { get; set; }
+        public string? SelectedIcon { get; set; }
         #endregion
 
         #region Login
@@ -29,8 +30,7 @@ namespace PWManagerService
 
         public string? Owner { get; set; }
         public string? CardNumber { get; set; }
-        public int? CardTypeId { get; set; }
-        public DateTime? ExpirationDate { get; set; }
+        public string? ExpirationDate { get; set; }
         public string? Pin { get; set; }
         public string? Cvv { get; set; }
 
