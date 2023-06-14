@@ -121,8 +121,8 @@ namespace PWManagerService
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
 
-            // SeedData
 
+            // SeedData
             DataContext dataContext = new DataContext(Appsettings.Instance.Db_connectionstring);
             //dataContext.SeedData();
 

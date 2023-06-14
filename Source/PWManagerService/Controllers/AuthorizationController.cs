@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.EntityFrameworkCore;
 using PWManagerServiceModelEF;
 
 namespace PWManagerService.Controllers
@@ -11,13 +12,47 @@ namespace PWManagerService.Controllers
     {
         private ILogger<AuthorizationController> logger;
         private readonly UserManager<IdentityUser> userManager;
+        private readonly DataContext context;
+        private readonly TokenService tokenService;
 
-        public AuthorizationController(UserManager<IdentityUser> userManager, ILogger<AuthorizationController> logger)
+
+        public AuthorizationController(UserManager<IdentityUser> userManager, ILogger<AuthorizationController> logger, DataContext context, TokenService tokenService)
         {
             this.logger = logger;
             this.userManager = userManager;
+            this.tokenService = tokenService;
+            this.context = context;
         }
 
+        [HttpPost]
+        [Route("login")]
+        public async Task<ActionResult<ResponseBody<object>>> Authenticate(string password, string mail)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            IdentityUser managedUser = await userManager.FindByEmailAsync(mail);
+            if (managedUser == null)
+            {
+                return BadRequest("Bad credentials");
+            }
+            bool isPasswordValid = await userManager.CheckPasswordAsync(managedUser, password);
+            if (!isPasswordValid)
+            {
+                return BadRequest("Bad credentials");
+            }
+            
+            IdentityUser userInDb = context.Users.FirstOrDefault(u => u.Email == mail);
+            if (userInDb is null)
+                return Unauthorized();
+
+            string accessToken = tokenService.CreateToken(userInDb);
+            await context.SaveChangesAsync();
+
+            return Ok(accessToken);
+        }
 
         [HttpPost]
         [Route("register")]
