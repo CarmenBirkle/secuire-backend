@@ -176,7 +176,7 @@ namespace PWManagerService.Controllers
 
         #region NewMethods
 
-        [HttpGet]
+        [HttpGet, Authorize]
         public async Task<ActionResult<GetResponseBody<List<object>>>> GetAllDataEntries()
         {
             List<object> dataEntries = new List<object>();
