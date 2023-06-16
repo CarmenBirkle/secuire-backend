@@ -12,8 +12,8 @@ using PWManagerServiceModelEF;
 namespace PWManagerServiceModelEF.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230613063333_identityMigration3")]
-    partial class identityMigration3
+    [Migration("20230616123027_userAnpassung3")]
+    partial class userAnpassung3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,8 +168,17 @@ namespace PWManagerServiceModelEF.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Favourite")
-                        .HasColumnType("bit");
+                    b.Property<string>("CustomTopics")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Favourite")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SelectedIcon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -178,7 +187,12 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserIdentityUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserIdentityUserId");
 
                     b.ToTable("DataEntry");
                 });
@@ -205,63 +219,22 @@ namespace PWManagerServiceModelEF.Migrations
                     b.ToTable("Login");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CardType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CardType");
-                });
-
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CustomTopic", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DataEntryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FieldContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FieldName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DataEntryId");
-
-                    b.ToTable("CustomTopic");
-                });
-
             modelBuilder.Entity("PWManagerServiceModelEF.PaymentCard", b =>
                 {
                     b.Property<int>("DataEntryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CardTypeId")
-                        .HasColumnType("int");
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Cvv")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ExpirationDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Number")
                         .IsRequired()
@@ -276,8 +249,6 @@ namespace PWManagerServiceModelEF.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DataEntryId");
-
-                    b.HasIndex("CardTypeId");
 
                     b.ToTable("PaymentCard");
                 });
@@ -294,6 +265,33 @@ namespace PWManagerServiceModelEF.Migrations
                     b.HasKey("DataEntryId");
 
                     b.ToTable("SafeNote");
+                });
+
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
+                {
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AgbAcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FailedLogins")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("LockedLogin")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHint")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdentityUserId");
+
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -323,6 +321,13 @@ namespace PWManagerServiceModelEF.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PWManagerServiceModelEF.DataEntry", b =>
+                {
+                    b.HasOne("PWManagerServiceModelEF.User", null)
+                        .WithMany("DataEntries")
+                        .HasForeignKey("UserIdentityUserId");
+                });
+
             modelBuilder.Entity("PWManagerServiceModelEF.Login", b =>
                 {
                     b.HasOne("PWManagerServiceModelEF.DataEntry", "DataEntry")
@@ -334,32 +339,13 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Navigation("DataEntry");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CustomTopic", b =>
-                {
-                    b.HasOne("PWManagerServiceModelEF.DataEntry", "DataEntry")
-                        .WithMany("CustomTopics")
-                        .HasForeignKey("DataEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DataEntry");
-                });
-
             modelBuilder.Entity("PWManagerServiceModelEF.PaymentCard", b =>
                 {
-                    b.HasOne("PWManagerServiceModelEF.Model.CardType", "CardType")
-                        .WithMany("PaymentCards")
-                        .HasForeignKey("CardTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("PWManagerServiceModelEF.DataEntry", "DataEntry")
                         .WithMany()
                         .HasForeignKey("DataEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CardType");
 
                     b.Navigation("DataEntry");
                 });
@@ -375,14 +361,20 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Navigation("DataEntry");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.DataEntry", b =>
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
                 {
-                    b.Navigation("CustomTopics");
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IdentityUser");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CardType", b =>
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
                 {
-                    b.Navigation("PaymentCards");
+                    b.Navigation("DataEntries");
                 });
 #pragma warning restore 612, 618
         }

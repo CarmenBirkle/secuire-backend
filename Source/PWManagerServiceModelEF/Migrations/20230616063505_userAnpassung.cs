@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PWManagerServiceModelEF.Migrations
 {
     /// <inheritdoc />
-    public partial class identityMigration : Migration
+    public partial class userAnpassung : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,12 +16,6 @@ namespace PWManagerServiceModelEF.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHint = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AgbAcceptedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FailedLogins = table.Column<int>(type: "int", nullable: false),
-                    LockedLogin = table.Column<bool>(type: "bit", nullable: false),
-                    Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -40,19 +34,6 @@ namespace PWManagerServiceModelEF.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CardType",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CardType", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -117,6 +98,29 @@ namespace PWManagerServiceModelEF.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    IdentityUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHint = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AgbAcceptedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FailedLogins = table.Column<int>(type: "int", nullable: false),
+                    LockedLogin = table.Column<bool>(type: "bit", nullable: false),
+                    Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdentUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.IdentityUserId);
+                    table.ForeignKey(
+                        name: "FK_User_AspNetUsers_IdentUserId",
+                        column: x => x.IdentUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DataEntry",
                 columns: table => new
                 {
@@ -124,39 +128,20 @@ namespace PWManagerServiceModelEF.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Subject = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Favourite = table.Column<bool>(type: "bit", nullable: false),
+                    Favourite = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    SelectedIcon = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomTopics = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserIdentityUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DataEntry", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DataEntry_AspNetUsers_UserId1",
-                        column: x => x.UserId1,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CustomTopic",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DataEntryId = table.Column<int>(type: "int", nullable: false),
-                    FieldContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FieldName = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CustomTopic", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CustomTopic_DataEntry_DataEntryId",
-                        column: x => x.DataEntryId,
-                        principalTable: "DataEntry",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_DataEntry_User_UserIdentityUserId",
+                        column: x => x.UserIdentityUserId,
+                        principalTable: "User",
+                        principalColumn: "IdentityUserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -186,20 +171,14 @@ namespace PWManagerServiceModelEF.Migrations
                     DataEntryId = table.Column<int>(type: "int", nullable: false),
                     Owner = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CardTypeId = table.Column<int>(type: "int", nullable: false),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpirationDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Pin = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Cvv = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Cvv = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardType = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PaymentCard", x => x.DataEntryId);
-                    table.ForeignKey(
-                        name: "FK_PaymentCard_CardType_CardTypeId",
-                        column: x => x.CardTypeId,
-                        principalTable: "CardType",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PaymentCard_DataEntry_DataEntryId",
                         column: x => x.DataEntryId,
@@ -249,19 +228,14 @@ namespace PWManagerServiceModelEF.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomTopic_DataEntryId",
-                table: "CustomTopic",
-                column: "DataEntryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DataEntry_UserId1",
+                name: "IX_DataEntry_UserIdentityUserId",
                 table: "DataEntry",
-                column: "UserId1");
+                column: "UserIdentityUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PaymentCard_CardTypeId",
-                table: "PaymentCard",
-                column: "CardTypeId");
+                name: "IX_User_IdentUserId",
+                table: "User",
+                column: "IdentUserId");
         }
 
         /// <inheritdoc />
@@ -277,9 +251,6 @@ namespace PWManagerServiceModelEF.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "CustomTopic");
-
-            migrationBuilder.DropTable(
                 name: "Login");
 
             migrationBuilder.DropTable(
@@ -289,10 +260,10 @@ namespace PWManagerServiceModelEF.Migrations
                 name: "SafeNote");
 
             migrationBuilder.DropTable(
-                name: "CardType");
+                name: "DataEntry");
 
             migrationBuilder.DropTable(
-                name: "DataEntry");
+                name: "User");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

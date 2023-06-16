@@ -12,8 +12,8 @@ using PWManagerServiceModelEF;
 namespace PWManagerServiceModelEF.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230613054828_identityMigration")]
-    partial class identityMigration
+    [Migration("20230616063505_userAnpassung")]
+    partial class userAnpassung
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,71 @@ namespace PWManagerServiceModelEF.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
@@ -103,8 +168,17 @@ namespace PWManagerServiceModelEF.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Favourite")
-                        .HasColumnType("bit");
+                    b.Property<string>("CustomTopics")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Favourite")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SelectedIcon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -113,12 +187,12 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserIdentityUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserIdentityUserId");
 
                     b.ToTable("DataEntry");
                 });
@@ -145,63 +219,22 @@ namespace PWManagerServiceModelEF.Migrations
                     b.ToTable("Login");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CardType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CardType");
-                });
-
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CustomTopic", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DataEntryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FieldContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FieldName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DataEntryId");
-
-                    b.ToTable("CustomTopic");
-                });
-
             modelBuilder.Entity("PWManagerServiceModelEF.PaymentCard", b =>
                 {
                     b.Property<int>("DataEntryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CardTypeId")
-                        .HasColumnType("int");
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Cvv")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ExpirationDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Number")
                         .IsRequired()
@@ -216,8 +249,6 @@ namespace PWManagerServiceModelEF.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("DataEntryId");
-
-                    b.HasIndex("CardTypeId");
 
                     b.ToTable("PaymentCard");
                 });
@@ -238,93 +269,40 @@ namespace PWManagerServiceModelEF.Migrations
 
             modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("IdentityUserId")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("AgbAcceptedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
                     b.Property<int>("FailedLogins")
                         .HasColumnType("int");
 
+                    b.Property<string>("IdentUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<bool>("LockedLogin")
                         .HasColumnType("bit");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHint")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Salt")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("IdentityUserId");
 
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                    b.HasIndex("IdentUserId");
 
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("PWManagerServiceModelEF.User", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -333,7 +311,7 @@ namespace PWManagerServiceModelEF.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("PWManagerServiceModelEF.User", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -342,7 +320,7 @@ namespace PWManagerServiceModelEF.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("PWManagerServiceModelEF.User", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -353,7 +331,7 @@ namespace PWManagerServiceModelEF.Migrations
                 {
                     b.HasOne("PWManagerServiceModelEF.User", null)
                         .WithMany("DataEntries")
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserIdentityUserId");
                 });
 
             modelBuilder.Entity("PWManagerServiceModelEF.Login", b =>
@@ -367,32 +345,13 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Navigation("DataEntry");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CustomTopic", b =>
-                {
-                    b.HasOne("PWManagerServiceModelEF.DataEntry", "DataEntry")
-                        .WithMany("CustomTopics")
-                        .HasForeignKey("DataEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DataEntry");
-                });
-
             modelBuilder.Entity("PWManagerServiceModelEF.PaymentCard", b =>
                 {
-                    b.HasOne("PWManagerServiceModelEF.Model.CardType", "CardType")
-                        .WithMany("PaymentCards")
-                        .HasForeignKey("CardTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("PWManagerServiceModelEF.DataEntry", "DataEntry")
                         .WithMany()
                         .HasForeignKey("DataEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CardType");
 
                     b.Navigation("DataEntry");
                 });
@@ -408,14 +367,15 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Navigation("DataEntry");
                 });
 
-            modelBuilder.Entity("PWManagerServiceModelEF.DataEntry", b =>
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
                 {
-                    b.Navigation("CustomTopics");
-                });
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentUser")
+                        .WithMany()
+                        .HasForeignKey("IdentUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-            modelBuilder.Entity("PWManagerServiceModelEF.Model.CardType", b =>
-                {
-                    b.Navigation("PaymentCards");
+                    b.Navigation("IdentUser");
                 });
 
             modelBuilder.Entity("PWManagerServiceModelEF.User", b =>

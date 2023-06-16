@@ -184,7 +184,12 @@ namespace PWManagerServiceModelEF.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserIdentityUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserIdentityUserId");
 
                     b.ToTable("DataEntry");
                 });
@@ -259,6 +264,33 @@ namespace PWManagerServiceModelEF.Migrations
                     b.ToTable("SafeNote");
                 });
 
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
+                {
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AgbAcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FailedLogins")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("LockedLogin")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHint")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdentityUserId");
+
+                    b.ToTable("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
@@ -284,6 +316,13 @@ namespace PWManagerServiceModelEF.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PWManagerServiceModelEF.DataEntry", b =>
+                {
+                    b.HasOne("PWManagerServiceModelEF.User", null)
+                        .WithMany("DataEntries")
+                        .HasForeignKey("UserIdentityUserId");
                 });
 
             modelBuilder.Entity("PWManagerServiceModelEF.Login", b =>
@@ -317,6 +356,17 @@ namespace PWManagerServiceModelEF.Migrations
                         .IsRequired();
 
                     b.Navigation("DataEntry");
+                });
+
+            modelBuilder.Entity("PWManagerServiceModelEF.User", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithMany()
+                        .HasForeignKey("IdentityUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IdentityUser");
                 });
 
             modelBuilder.Entity("PWManagerServiceModelEF.User", b =>

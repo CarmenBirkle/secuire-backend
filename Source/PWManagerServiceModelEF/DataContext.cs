@@ -40,13 +40,13 @@ namespace PWManagerServiceModelEF
             modelBuilder.Entity<Login>();
             modelBuilder.Entity<DataEntry>();
             modelBuilder.Entity<SafeNote>();
-            //modelBuilder.Entity<User>();
+            modelBuilder.Entity<User>();
             modelBuilder.Entity<PaymentCard>();
 
             base.OnModelCreating(modelBuilder);
         }
 
-        //public DbSet<User> User { get; set; }
+        public DbSet<User> User { get; set; }
         public DbSet<DataEntry> DataEntry { get; set; }
         public DbSet<Login> Login { get; set; }
         public DbSet<PaymentCard> PaymentCard { get; set; }
