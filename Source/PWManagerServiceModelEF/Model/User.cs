@@ -16,7 +16,7 @@ namespace PWManagerServiceModelEF
         public string Password { get; set; } = string.Empty;
         public string PasswordHint { get; set; } = string.Empty;
         public DateTime AgbAcceptedAt { get; set; }
-        public int FailedLogins { get; set; }
+        public int FailedLogins { get; set; } 
         public bool LockedLogin { get; set; }
         public string Salt { get; set; } = string.Empty;
 

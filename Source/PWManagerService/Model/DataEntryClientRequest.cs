@@ -1,4 +1,5 @@
 ﻿using PWManagerServiceModelEF;
+using System.ComponentModel;
 
 namespace PWManagerService
 {
@@ -7,13 +8,12 @@ namespace PWManagerService
         public DataEntryClientRequest() { }
 
         #region General
-
-        public int? Id { get; set; }
         public string? Category { get; set; }
         public string? Subject { get; set; }
-        //public List<CustomTopic>? CustomTopics { get; set; }
-        public string Favourite { get; set; }
+        public string? CustomTopics { get; set; }
+        public string? Favourite { get; set; }
         public string? Comment { get; set; }
+        public string? SelectedIcon { get; set; }
         #endregion
 
         #region Login
@@ -27,14 +27,15 @@ namespace PWManagerService
         #endregion
 
         #region Payment Card
-        public string? Pin { get; set; }
-        public string? Cardnumber { get; set; }
-        public string? Expirationdate { get; set; }
+
         public string? Owner { get; set; }
+        public string? CardNumber { get; set; }
+        public string? ExpirationDate { get; set; }
+        public string? Pin { get; set; }
         public string? Cvv { get; set; }
-        public string? Cardtype { get; set; }
+
         #endregion
     }
 
-  
+
 }

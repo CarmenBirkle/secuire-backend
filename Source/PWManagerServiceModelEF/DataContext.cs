@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PWManagerServiceModelEF.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
@@ -43,10 +42,6 @@ namespace PWManagerServiceModelEF
             modelBuilder.Entity<SafeNote>();
             //modelBuilder.Entity<User>();
             modelBuilder.Entity<PaymentCard>();
-            modelBuilder.Entity<CardType>();
-            modelBuilder.Entity<CustomTopic>();
-
-            //modelBuilder.Entity<SafeNoteEntry>();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -56,132 +51,130 @@ namespace PWManagerServiceModelEF
         public DbSet<Login> Login { get; set; }
         public DbSet<PaymentCard> PaymentCard { get; set; }
         public DbSet<SafeNote> SafeNote { get; set; }
-        public DbSet<CustomTopic> CustomTopic { get; set; }
 
-        public DbSet<CardType> CardType { get; set; }
 
-        //public void SeedData()
-        //{
-        //    if (!User.Any())
-        //    {
-        //        var users = new[]
-        //        {
-        //            new User
-        //            {
-        //                UserName = "Dominik",
-        //                Password = "mein_passwort9",
-        //                PasswordHint = "Passworthinweis",
-        //                AgbAcceptedAt = DateTime.Now.AddDays(-1),
-        //                FailedLogins = 0,
-        //                LockedLogin = false,
-        //                Salt = "salzig"
-        //            },
-        //            new User
-        //            {
-        //                UserName = "Stephan",
-        //                Password = "mein_passwort11",
-        //                PasswordHint = "Passworthinweis2",
-        //                AgbAcceptedAt = DateTime.Now.AddDays(-11),
-        //                FailedLogins = 0,
-        //                LockedLogin = false,
-        //                Salt = "sehr_salzig"
-        //            },
-        //        };
+        public DataEntry GetDataEntry(int id)
+        {
+            try
+            {
+                DataEntry dataEntry = DataEntry
+                .Where(d => d.Id == id)
+                .ToList()
+                .Single();
 
-        //        User.AddRange(users);
-        //        SaveChanges();
-        //    }
+                return dataEntry;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+           
+        }
+        public List<PaymentCard> GetPaymentCard()
+        {
+            try
+            {
+                List<PaymentCard> paymentCards = PaymentCard
+                .Include(d => d.DataEntry)
+                .ToList();
 
-        //    if (!CardType.Any())
-        //    {
-        //        var cardTypes = new[]
-        //        {
-        //            new CardType {Type = "VISA"},
-        //            new CardType {Type = "EC"},
-        //            new CardType {Type = "MasterCard"},
-        //        };
+                return paymentCards;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
 
-        //        CardType.AddRange(cardTypes);
-        //        SaveChanges();
-        //    }
+        }
+        public PaymentCard GetPaymentCard(int id)
+        {
+            try
+            {
+                PaymentCard paymentCard = PaymentCard
+                                .Where(p => p.DataEntryId == id)
+                                .Include(d => d.DataEntry)
+                                .ToList()
+                                .Single();
 
-        //    if (!DataEntry.Any())
-        //    {
-        //        var dataEntries = new[]
-        //        {
-        //        new DataEntry {UserId = 1, Subject = "DataEntry 1-1", Favourite = false, Comment= "Comment 1-1"  },
-        //        new DataEntry {UserId = 1, Subject = "DataEntry 1-2", Favourite = false, Comment= "Comment 1-2"  },
-        //        new DataEntry {UserId = 1, Subject = "DataEntry 1-3", Favourite = false, Comment= "Comment 1-3"  },
-        //        new DataEntry {UserId = 2, Subject = "DataEntry 2-1", Favourite = false, Comment= "Comment 2-1"  },
-        //        new DataEntry {UserId = 2, Subject = "DataEntry 2-2", Favourite = false, Comment= "Comment 2-2"  },
-        //        new DataEntry {UserId = 2, Subject = "DataEntry 2-3", Favourite = false, Comment= "Comment 2-3"  },
-        //        };
+                return paymentCard;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
 
-        //        DataEntry.AddRange(dataEntries);
-        //        SaveChanges();
+        public List<Login> GetLogin()
+        {
+            try
+            {
+                List<Login> logins = Login
+                .Include(d => d.DataEntry)
+                .ToList();
 
-        //        var logins = new[]
-        //        {
-        //            new Login
-        //            {
-        //                DataEntryId = dataEntries[0].Id,
-        //                Username = "dominik",
-        //                Password = "passwort",
-        //                Url = "https://eineseite.de"
-        //            },
-        //            new Login
-        //            {
-        //                DataEntryId = dataEntries[3].Id,
-        //                Username = "stephan",
-        //                Password = "passwort2",
-        //                Url = "https://zweiteseite.de"
-        //            }
-        //        };
+                return logins;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
 
-        //        Login.AddRange(logins);
-        //        SaveChanges();
+        }
 
-        //        var safeNote = new[]
-        //        {
-        //            new SafeNote
-        //            {
-        //                DataEntryId = dataEntries[1].Id,
-        //                Note = "Eine sichere Notiz mit Top Secret Inhalt."
-        //            },
-        //            new SafeNote
-        //            {
-        //                DataEntryId = dataEntries[4].Id,
-        //                Note = "Eine zweite sichere Notiz mit Top top Secret Inhalt."
-        //            }
-        //        };
+        public Login GetLogin(int id)
+        {
+            try
+            {
+                Login login = Login
+                .Where(l => l.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
 
-        //        var paymentCards = new[]
-        //        {
-        //            new PaymentCard
-        //            {
-        //                DataEntryId = dataEntries[2].Id,
-        //                Owner = "Karten Inhaber",
-        //                Number = "1234567890",
-        //                CardTypeId = CardType.OrderBy(o => o.Id).FirstOrDefault().Id,
-        //                ExpirationDate = DateTime.Now.AddDays(365),
-        //                Pin = "0277",
-        //                Cvv = "069"
-        //            },
-        //            new PaymentCard
-        //            {
-        //                DataEntryId = dataEntries[5].Id,
-        //                Owner = "Karten Inhaber2",
-        //                Number = "09876543210",
-        //                CardTypeId = CardType.OrderBy(o => o.Id).LastOrDefault().Id,
-        //                ExpirationDate = DateTime.Now.AddDays(50),
-        //                Pin = "0277",
-        //                Cvv = "069"
-        //            }
-        //        };
+                return login;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
 
-        //        PaymentCard.AddRange(paymentCards);
-        //        SaveChanges();
-        //    }
-        //}
+        public List<SafeNote> GetSafeNote()
+        {
+            try
+            {
+                List<SafeNote> safeNotes = SafeNote
+                .Include(d => d.DataEntry)
+                .ToList();
+
+                return safeNotes;
+            }
+            catch (InvalidOperationException)
+            {
+
+                return null;
+            }
+
+        }
+
+        public SafeNote GetSafeNote(int id)
+        {
+            try
+            {
+                SafeNote safeNote = SafeNote
+                .Where(s => s.DataEntryId == id)
+                .Include(d => d.DataEntry)
+                .ToList()
+                .Single();
+
+                return safeNote;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+
+
     }
 }

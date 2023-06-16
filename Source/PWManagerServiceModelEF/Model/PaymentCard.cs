@@ -1,5 +1,4 @@
-﻿using PWManagerServiceModelEF.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,12 +14,10 @@ namespace PWManagerServiceModelEF
         public int DataEntryId { get; set; }
         public string Owner { get; set; }
         public string Number { get; set; }
-        public int CardTypeId { get; set; }
-        public DateTime ExpirationDate { get; set; }
+        public string ExpirationDate { get; set; }
         public string Pin { get; set; }
         public string Cvv { get; set; }
-
         public DataEntry DataEntry { get; set; }
-        public CardType CardType { get; set; }
+        public string CardType { get; set; }
     }
 }

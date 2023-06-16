@@ -66,7 +66,7 @@ namespace PWManagerService
                         ValidIssuer = ApiWithAuthBackendString,
                         ValidAudience = ApiWithAuthBackendString,
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            //ToDO: näher mit befassen -> .env oder so auslagern
+                            //ToDO: nï¿½her mit befassen -> .env oder so auslagern
                             Encoding.UTF8.GetBytes("!SomethingSecret!")
                         ),
                     };
@@ -104,8 +104,8 @@ namespace PWManagerService
             });
 
             // zur Limitierung von Aufrufen innerhalb eines Zeitraumes
-            // Es wird je Aufruf unabhängig vom Endpunkt gezählt
-            // abhängig vom Aufrufenden (IP-Adresse)?
+            // Es wird je Aufruf unabhï¿½ngig vom Endpunkt gezï¿½hlt
+            // abhï¿½ngig vom Aufrufenden (IP-Adresse)?
             builder.Services.AddRateLimiter(_ => _
                 .AddFixedWindowLimiter(policyName: "fixed", options =>
                 {
@@ -120,11 +120,6 @@ namespace PWManagerService
 
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
-
-            // SeedData
-
-            DataContext dataContext = new DataContext(Appsettings.Instance.Db_connectionstring);
-            //dataContext.SeedData();
 
             WebApplication app = builder.Build();
 
