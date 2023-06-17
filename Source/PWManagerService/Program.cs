@@ -26,6 +26,13 @@ namespace PWManagerService
         public static void Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+            Configuration = builder.Configuration;
+
+            builder.Services.AddDbContext<DataContext>(options =>
+    options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
+            builder.Services.AddScoped<TokenService, TokenService>();
+            builder.Services.AddControllers();
+
 
             Serilog.Core.Logger logger = new LoggerConfiguration()
               .ReadFrom.Configuration(builder.Configuration)
@@ -43,9 +50,7 @@ namespace PWManagerService
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog(logger);
 
-            Configuration = builder.Configuration;
 
-            builder.Services.AddControllers();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -110,7 +115,6 @@ namespace PWManagerService
             })
                 .AddEntityFrameworkStores<DataContext>();
 
-            builder.Services.AddScoped<TokenService, TokenService>();
 
             //
             builder.Services.AddControllersWithViews()
@@ -144,8 +148,7 @@ namespace PWManagerService
                 }));
 
 
-            builder.Services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(Appsettings.Instance.Db_connectionstring));
+
 
             WebApplication app = builder.Build();
 
@@ -168,8 +171,8 @@ namespace PWManagerService
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
 
             app.MapControllers();
