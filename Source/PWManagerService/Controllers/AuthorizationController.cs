@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
+using PWManagerService.Model;
 using PWManagerServiceModelEF;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace PWManagerService.Controllers
 {
@@ -27,18 +29,18 @@ namespace PWManagerService.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(string mail, string password, string salt, string passwordHint, string username, DateTime agbAcceptedAt)
+        public async Task<IActionResult> Register(RegistrationData userData)
         {
             IdentityUser identUser = new IdentityUser();
-            identUser.Email = mail;
-            identUser.PasswordHash = password;
-            identUser.UserName = username;
+            identUser.Email = userData.Email;
+            identUser.PasswordHash = userData.HashedPassword;
+            identUser.UserName = userData.Username;
 
             User user = new User();
             //user.IdentUser = identUser;
-            user.PasswordHint = passwordHint;
-            user.AgbAcceptedAt = agbAcceptedAt;
-            user.Salt = salt;
+            user.PasswordHint = userData.PasswordHint;
+            user.AgbAcceptedAt = userData.AgbAcceptedAt;
+            user.Salt = userData.Salt;
             user.FailedLogins = 0;
             user.LockedLogin = false;
 
@@ -64,32 +66,46 @@ namespace PWManagerService.Controllers
             return BadRequest(ModelState);
         }
 
+        [HttpGet]
+        [Route("Salt")]
+        public async Task<ActionResult<object>> GetSalt(string email)
+        {
+            User user = await dataContext.GetUser(email);
+            return Ok(user.Salt);
+        }
+
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<object>> Authenticate( string mail, string passwordHash)
+        public async Task<ActionResult<object>> Authenticate([FromBody] AuthentificationData loginData)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var managedUser = await userManager.FindByEmailAsync(mail);
-            if (managedUser == null)
+            User user = await dataContext.GetUser(loginData.Email, userManager);
+            //IdentityUser? managedUser = await userManager.FindByEmailAsync(loginData.Email);
+
+            if (user == null)
             {
                 return BadRequest("Bad credentials");
             }
-            var isPasswordValid = await userManager.CheckPasswordAsync(managedUser, passwordHash);
+            bool isPasswordValid = await userManager.CheckPasswordAsync(user.IdentityUser, loginData.HashedPassword);
             if (!isPasswordValid)
             {
-                return BadRequest("Bad credentials");
+                //return BadRequest("Bad credentials");
+                return Unauthorized("Password invalide");
             }
-            var userInDb = dataContext.Users.FirstOrDefault(u => u.Email == mail);
-            if (userInDb is null)
-                return Unauthorized();
-            string accessToken = tokenService.CreateToken(userInDb);
-            await dataContext.SaveChangesAsync();
+
+            ////IdentityUser userInDb = dataContext.Users.FirstOrDefault(u => u.Email == loginData.Email);
+            //if (userInDb is null)
             
-            return Ok(accessToken);
+            user.JwtToken = tokenService.CreateToken(user.IdentityUser);
+            await dataContext.SaveChangesAsync();
+  
+            return Ok(user);
+
+            //return Ok(accessToken);
         }
 
     }

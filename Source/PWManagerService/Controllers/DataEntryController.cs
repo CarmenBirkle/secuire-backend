@@ -177,6 +177,7 @@ namespace PWManagerService.Controllers
         #region NewMethods
 
         [HttpGet, Authorize]
+        [Route("all")]
         public async Task<ActionResult<GetResponseBody<List<object>>>> GetAllDataEntries()
         {
             List<object> dataEntries = new List<object>();
@@ -198,7 +199,7 @@ namespace PWManagerService.Controllers
             return Ok(dataEntries);
         }
 
-        [HttpGet]
+        [HttpGet, Authorize]
         [Route("{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetDataEntryById(int id)
         {
@@ -225,7 +226,7 @@ namespace PWManagerService.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> CreateDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
             string category = dataEntryClientRequest.Category;
@@ -296,7 +297,7 @@ namespace PWManagerService.Controllers
 
         }
 
-        [HttpPut]
+        [HttpPut, Authorize]
         [Route("{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> AlterDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
@@ -419,7 +420,7 @@ namespace PWManagerService.Controllers
             }
         }
 
-        [HttpDelete]
+        [HttpDelete, Authorize]
         [Route("{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> DeleteDataEntryById(int id)
         {

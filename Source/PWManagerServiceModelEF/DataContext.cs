@@ -14,8 +14,8 @@ namespace PWManagerServiceModelEF
     public class DataContext : IdentityUserContext<IdentityUser>
     {
         //ToDo: in Konfig auslagern
-        private string connectionString = "Server=(LocalDB)\\MSSQLLocalDB;Database=ISEFPWManagerDB;Integrated Security=SSPI;";
-        /*= "Server=isefpwmanagerdbserver.database.windows.net;Database=ISEFPWManagerDB;User Id=isefsa;Password=5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK;";*/
+        private string connectionString = "Server=isefpwmanagerdbserver.database.windows.net;Database=ISEFPWManagerDB;User Id=isefsa;Password=5^#YA8VdGobZKC92eAgVsxJXJf2ZZL8i%y@2r&s2^B%7x3sHC@bVDdPWDyrxF@85ryWEfXs48ABy*i^tgEx53F8ytU$#LZPu$svTjQ3@bB&qVAEofC9RpSzzD7tRMyMK;";
+            //"Server=(LocalDB)\\MSSQLLocalDB;Database=ISEFPWManagerDB;Integrated Security=SSPI;";
         public DataContext() { }
         public DataContext(string connectionString) 
         { 
@@ -52,6 +52,21 @@ namespace PWManagerServiceModelEF
         public DbSet<PaymentCard> PaymentCard { get; set; }
         public DbSet<SafeNote> SafeNote { get; set; }
 
+        public async Task<User> GetUser(string email, UserManager<IdentityUser> userManager = null)
+        {
+            try
+            {
+                User user = User.Where(user => user.IdentityUser.Email == email).ToList().Single();
+                if(userManager != null)
+                    user.IdentityUser = await userManager.FindByEmailAsync(email);
+
+                return user;
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+        }
 
         public DataEntry GetDataEntry(int id)
         {

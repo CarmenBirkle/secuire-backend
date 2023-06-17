@@ -19,7 +19,7 @@ namespace PWManagerServiceModelEF
         [Key, ForeignKey(nameof(IdentityUser))]
         public string IdentityUserId { get; set; }
 
-
+        
         public string PasswordHint { get; set; } = string.Empty;
         public DateTime AgbAcceptedAt { get; set; }
         public int FailedLogins { get; set; } 
@@ -28,5 +28,8 @@ namespace PWManagerServiceModelEF
 
         public IdentityUser IdentityUser { get; set; }
         public ICollection<DataEntry> DataEntries { get; set; } = new List<DataEntry>();
+
+        [NotMapped]
+        public string JwtToken { get; set; }
     }
 }
