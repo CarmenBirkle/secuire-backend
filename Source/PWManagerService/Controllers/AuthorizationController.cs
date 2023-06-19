@@ -29,7 +29,7 @@ namespace PWManagerService.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(RegistrationData userData)
+        public async Task<IActionResult> Register([FromBody] RegistrationData userData)
         {
             IdentityUser identUser = new IdentityUser();
             identUser.Email = userData.Email;
@@ -37,17 +37,20 @@ namespace PWManagerService.Controllers
             identUser.UserName = userData.Username;
 
             User user = new User();
-            //user.IdentUser = identUser;
             user.PasswordHint = userData.PasswordHint;
             user.AgbAcceptedAt = userData.AgbAcceptedAt;
             user.Salt = userData.Salt;
             user.FailedLogins = 0;
             user.LockedLogin = false;
 
+            //Ueberpruefung ob Email schon vorhanden ist
+            User takenUser = await dataContext.GetUser(userData.Email, userManager);
+            if (takenUser != null)
+                return Conflict("EMail Adress already taken");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             IdentityResult result = await userManager.CreateAsync(identUser, identUser.PasswordHash);
 
 
@@ -58,11 +61,14 @@ namespace PWManagerService.Controllers
                 dataContext.SaveChanges();
                 return CreatedAtAction(nameof(Register), new { email = identUser.Email }, user);
             }
+            
 
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(error.Code, error.Description);
             }
+
+
             return BadRequest(ModelState);
         }
 
@@ -84,7 +90,6 @@ namespace PWManagerService.Controllers
             }
 
             User user = await dataContext.GetUser(loginData.Email, userManager);
-            //IdentityUser? managedUser = await userManager.FindByEmailAsync(loginData.Email);
 
             if (user == null)
             {
@@ -93,19 +98,13 @@ namespace PWManagerService.Controllers
             bool isPasswordValid = await userManager.CheckPasswordAsync(user.IdentityUser, loginData.HashedPassword);
             if (!isPasswordValid)
             {
-                //return BadRequest("Bad credentials");
                 return Unauthorized("Password invalide");
             }
-
-            ////IdentityUser userInDb = dataContext.Users.FirstOrDefault(u => u.Email == loginData.Email);
-            //if (userInDb is null)
             
             user.JwtToken = tokenService.CreateToken(user.IdentityUser);
             await dataContext.SaveChangesAsync();
   
             return Ok(user);
-
-            //return Ok(accessToken);
         }
 
     }
