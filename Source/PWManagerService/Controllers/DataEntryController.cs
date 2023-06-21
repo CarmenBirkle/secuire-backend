@@ -9,6 +9,7 @@ using Serilog;
 using Microsoft.AspNetCore.Authorization;
 using PWManagerService.Model;
 using System;
+using System.Security.Claims;
 
 //using System.Text.Json;
 
@@ -180,6 +181,14 @@ namespace PWManagerService.Controllers
         [Route("all")]
         public async Task<ActionResult<GetResponseBody<List<object>>>> GetAllDataEntries()
         {
+            string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+
+            
+
+            User user = TokenService.GetUser(token);
+
+            
+
             List<object> dataEntries = new List<object>();
 
             List<PaymentCard> paymentCards = dataContext.GetPaymentCard();
@@ -203,6 +212,8 @@ namespace PWManagerService.Controllers
         [Route("{id:int}")]
         public async Task<ActionResult<GetResponseBody<DataEntry>>> GetDataEntryById(int id)
         {
+            
+
             PaymentCard paymentCard = dataContext.GetPaymentCard(id);
             SafeNote safeNote = dataContext.GetSafeNote(id);
             Login login = dataContext.GetLogin(id);

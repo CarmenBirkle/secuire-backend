@@ -9,7 +9,29 @@ namespace PWManagerService
 {
     public class TokenService
     {
-        private const int ExpirationMinutes = 30;
+        private const int ExpirationMinutes = 30; // ToDo: In Konfig auslagern
+
+        public static string GetUserMail(string jwtToken)
+        {
+            string email = string.Empty;
+
+            try
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                JwtSecurityToken token = handler.ReadJwtToken(jwtToken);
+
+                string emailTypeString = @"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+                email = token.Claims.Where(c => c.Type == emailTypeString).Single().Value;
+            }
+            catch(Exception ex)
+            {
+                //ToDo: Loggen
+                return string.Empty;
+            }
+
+            return email;
+        }
+
         public string CreateToken(IdentityUser user)
         {
             var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
