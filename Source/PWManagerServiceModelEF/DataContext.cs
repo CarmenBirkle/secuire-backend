@@ -85,6 +85,22 @@ namespace PWManagerServiceModelEF
             }
            
         }
+
+        public List<object> GetAllDataEntries(User user)
+        {
+            List<object> dataEntries = new List<object>();
+            List<PaymentCard> paymentCards = this.GetPaymentCard().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList();
+            List<SafeNote> safeNotes = this.GetSafeNote().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList();
+            List<Login> logins = this.GetLogin().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList(); ;
+
+            dataEntries.AddRange(paymentCards);
+            dataEntries.AddRange(safeNotes);
+            dataEntries.AddRange(logins);
+
+            return dataEntries;
+        }
+      
+
         public List<PaymentCard> GetPaymentCard()
         {
             try
@@ -101,6 +117,23 @@ namespace PWManagerServiceModelEF
             }
 
         }
+        public List<PaymentCard> GetPaymentCard(User user)
+        {
+            try
+            {
+                List<PaymentCard> paymentCards = PaymentCard
+                .Include(d => d.DataEntry)
+                .ToList();
+
+                return paymentCards;
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
+        }
+
         public PaymentCard GetPaymentCard(int id)
         {
             try

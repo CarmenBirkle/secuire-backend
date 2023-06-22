@@ -15,11 +15,14 @@ namespace PWManagerServiceModelEF
     {
         public int Id { get; set; }
 
-        public int UserId { get; set; }
+        [ForeignKey(nameof(User))]
+        public string UserId { get; set; }
         public string Subject { get; set; }
         public string Favourite { get; set; }
         public string Comment { get; set; }
         public string SelectedIcon { get; set; }
         public string CustomTopics { get; set; }
+
+        public User User { get; set; }
     }
 }

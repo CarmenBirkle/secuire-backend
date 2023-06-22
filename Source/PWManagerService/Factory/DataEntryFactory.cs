@@ -1,97 +1,113 @@
-﻿using PWManagerServiceModelEF;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json.Linq;
+using PWManagerServiceModelEF;
 
 namespace PWManagerService.Factory
 {
-    public static class DataEntryFactory
-    {/*
-        public static DataEntry InitEntry(DataEntryClientRequest clientData, out PostResponseBody<DataEntry> body, ILogger logger)
+    public class DataEntryFactory
+    {
+        private DataContext dataContext;
+        private ILogger logger;
+        private UserManager<IdentityUser> userManager;
+        public DataEntryFactory(DataContext dataContext, UserManager<IdentityUser> userManager, ILogger logger)
         {
-            body = new PostResponseBody<DataEntry>();
-            EntryType category;
-            DataEntry entry;
-
-            if (!Enum.TryParse(clientData.Category.ToUpper(), out category))
-            {
-                body.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                body.ResponseMessage = "Missing or Wrong Category";
-                logger.LogWarning("Missing or Wrong Category");
-
-                return null;
-            }
-
-            switch (category)
-            {
-                case EntryType.SAFENOTE:
-                    entry = new SafeNoteEntry();
-                    break;
-
-                case EntryType.PAYMENTCARD:
-                    entry = new PaymentCard();
-                    break;
-
-                case EntryType.LOGIN:
-                    entry = new Login();
-                    break;
-
-                default:
-                    body.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                    body.ResponseMessage = "Missing or Wrong Category";
-                    logger.LogWarning("Missing or Wrong Category");
-                    return null;
-            }
-            body.StatusCode = System.Net.HttpStatusCode.OK;
-            entry.FillData(clientData, ref body, logger);
-            return entry;
+            this.dataContext = dataContext;
+            this.logger = logger;
+            this.userManager = userManager;
         }
 
         /// <summary>
-        /// initialisiert die Felder
+        /// Liefert alle Dataentry Eintraege eines Users zurueck
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="clientData"></param>
-        /// <param name="body"></param>
-        /// <param name="logger"></param>
-        private static void FillData(this DataEntry entry, DataEntryClientRequest clientData, ref PostResponseBody<DataEntry> body, ILogger logger)
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<List<object>> GetAllDataEntries(string jwtToken, UserManager<IdentityUser> userManager)
         {
-            entry.Id = clientData.Id;
-            entry.Subject = clientData.Subject;
-            entry.CustomTopics = clientData.CustomTopics;
-            entry.Comment = clientData.Comment;
-            entry.Favourite = clientData.Favourite;
-
-            if(entry.GetType() == typeof(Login))
-            {
-                Login lEntry = (Login)entry;
-                lEntry.Username = clientData.Username;
-                lEntry.Password = clientData.Password;
-                lEntry.Url = clientData.Url;
-            }
-            if(entry.GetType() == typeof(PaymentCard))
-            {
-                PaymentCard pcEntry = (PaymentCard)entry;
-                pcEntry.Owner = clientData.Owner;
-                pcEntry.Cardnumber = clientData.Cardnumber;
-                pcEntry.CardType = clientData.Cardtype;
-                pcEntry.ExpirationDate = clientData.Expirationdate;
-                pcEntry.Pin = clientData.Pin;
-                pcEntry.Cvv = clientData.Cvv;
-            }
-            if(entry.GetType() == typeof(SafeNoteEntry))
-            {
-                SafeNoteEntry snEntry = (SafeNoteEntry)entry;
-                snEntry.SafeNote = clientData.Note;
-            }
+            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+            List<object> dataEntries = dataContext.GetAllDataEntries(user);
+            return dataEntries;
         }
 
-        public static void InsertEntry(this DataEntry entry, out PostResponseBody<DataEntry> body, ILogger logger, IDataHandler<DataEntry> dataHandler)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtToken"></param>
+        /// <param name="dataEntryClientRequest"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<(int, object?)> CreateDataEntry(string jwtToken, DataEntryClientRequest dataEntryClientRequest)
         {
-            body = new PostResponseBody<DataEntry>();
-            //body.RessourceLocation = dataHandler.InsertData(entry);
-            entry.Id = 1;
-            body.RessourceLocation = "api/DataEntry/Id/1";
-            body.StatusCode = System.Net.HttpStatusCode.Created;
-            body.Data = entry;
+            object? category = EntryType.UNDEFINED;
+            if (!Enum.TryParse(typeof(EntryType), (dataEntryClientRequest.Category ?? ""), out category))
+                return (400, null);
+
+            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+
+            DataEntry entry = new DataEntry
+            {
+                UserId = user.IdentityUserId,
+                Comment = dataEntryClientRequest.Comment ?? "",
+                Favourite = dataEntryClientRequest.Favourite ?? "",
+                Subject = dataEntryClientRequest.Subject ?? "",
+                CustomTopics = dataEntryClientRequest.CustomTopics ?? "",
+                SelectedIcon = dataEntryClientRequest.SelectedIcon ?? ""
+            };
+
+            await dataContext.DataEntry.AddAsync(entry);
+            dataContext.SaveChanges();
+
+            switch (category)
+            {
+                case EntryType.LOGIN:
+
+                    break;
+
+                case EntryType.SAFENOTE:
+                    {
+                        SafeNote safeNote = await CreateSafeNote(dataEntryClientRequest);
+                        safeNote.DataEntry = entry;
+                        user.DataEntries.Add(entry);
+                        
+
+
+                        return (201, safeNote);
+                    }
+                case EntryType.PAYMENTCARD:
+
+                    break;
+
+                default:
+                    return (400, null);
+            }
+
+            return (500, null);
         }
-        */
+
+        private async Task<Login> CreateLogin(DataEntryClientRequest request)
+        {
+            return null;
+        }
+
+        private async Task<SafeNote> CreateSafeNote(DataEntryClientRequest request)
+        {
+            SafeNote safeNote = new SafeNote();
+            safeNote.Note = request.Note ?? "";
+
+            await dataContext.SafeNote.AddAsync(safeNote);
+
+            return safeNote;
+        }
+
+
+        /// <summary>
+        /// liest JWT Token aus Header
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <returns></returns>
+        public string ReadToken(IHeaderDictionary headers)
+        {
+            return headers.Authorization.ToString().Replace("Bearer ", "");
+        }
     }
 }
