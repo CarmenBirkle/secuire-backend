@@ -9,7 +9,7 @@ namespace PWManagerService
 {
     public class TokenService
     {
-        private const int ExpirationMinutes = 30; // ToDo: In Konfig auslagern
+        private const int ExpirationMinutes = 3000; // ToDo: In Konfig auslagern
 
         public static string GetUserMail(string jwtToken)
         {

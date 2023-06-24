@@ -33,7 +33,7 @@ namespace PWManagerService
         public string? ExpirationDate { get; set; }
         public string? Pin { get; set; }
         public string? Cvv { get; set; }
-
+        public string? CardType { get; set; }
         #endregion
     }
 

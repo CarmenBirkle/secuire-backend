@@ -23,6 +23,6 @@ namespace PWManagerServiceModelEF
         public string SelectedIcon { get; set; }
         public string CustomTopics { get; set; }
 
-        public User User { get; set; }
+        //public User User { get; set; }
     }
 }

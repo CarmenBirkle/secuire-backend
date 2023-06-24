@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
+using PWManagerService.Controllers;
 using PWManagerServiceModelEF;
 
 namespace PWManagerService.Factory
@@ -33,66 +34,106 @@ namespace PWManagerService.Factory
         /// 
         /// </summary>
         /// <param name="jwtToken"></param>
-        /// <param name="dataEntryClientRequest"></param>
+        /// <param name="requestData"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<(int, object?)> CreateDataEntry(string jwtToken, DataEntryClientRequest dataEntryClientRequest)
+        public async Task<(int, object?)> CreateDataEntry(string jwtToken, DataEntryClientRequest requestData)
         {
             object? category = EntryType.UNDEFINED;
-            if (!Enum.TryParse(typeof(EntryType), (dataEntryClientRequest.Category ?? ""), out category))
+            if (!Enum.TryParse(typeof(EntryType), (requestData.Category ?? "").ToUpper(), out category))
                 return (400, null);
 
             User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
 
-            DataEntry entry = new DataEntry
-            {
-                UserId = user.IdentityUserId,
-                Comment = dataEntryClientRequest.Comment ?? "",
-                Favourite = dataEntryClientRequest.Favourite ?? "",
-                Subject = dataEntryClientRequest.Subject ?? "",
-                CustomTopics = dataEntryClientRequest.CustomTopics ?? "",
-                SelectedIcon = dataEntryClientRequest.SelectedIcon ?? ""
-            };
-
-            await dataContext.DataEntry.AddAsync(entry);
-            dataContext.SaveChanges();
+            object savedData;
 
             switch (category)
             {
                 case EntryType.LOGIN:
-
-                    break;
+                        savedData = await CreateLogin(requestData, user.IdentityUserId);
+                        break;
 
                 case EntryType.SAFENOTE:
-                    {
-                        SafeNote safeNote = await CreateSafeNote(dataEntryClientRequest);
-                        safeNote.DataEntry = entry;
-                        user.DataEntries.Add(entry);
-                        
+                        savedData = await CreateSafeNote(requestData, user.IdentityUserId);
+                        break;
 
-
-                        return (201, safeNote);
-                    }
                 case EntryType.PAYMENTCARD:
-
-                    break;
+                        savedData = await CreatePaymentCard(requestData, user.IdentityUserId);
+                        break;
 
                 default:
                     return (400, null);
             }
 
-            return (500, null);
+            dataContext.SaveChanges();
+            return (201, savedData);
         }
 
-        private async Task<Login> CreateLogin(DataEntryClientRequest request)
+        private async Task<DataEntry> SaveAndCreateDataEntry(DataEntryClientRequest requestData, string userId)
         {
-            return null;
+            DataEntry entry = new DataEntry
+            {
+                UserId = userId,
+                Comment = requestData.Comment ?? "",
+                Favourite = requestData.Favourite ?? "",
+                Subject = requestData.Subject ?? "",
+                CustomTopics = requestData.CustomTopics ?? "",
+                SelectedIcon = requestData.SelectedIcon ?? ""
+            };
+
+            await dataContext.DataEntry.AddAsync(entry);
+            dataContext.SaveChanges();
+
+            return entry;
         }
 
-        private async Task<SafeNote> CreateSafeNote(DataEntryClientRequest request)
+        private async Task<PaymentCard> CreatePaymentCard(DataEntryClientRequest requestData, string userId)
         {
+            DataEntry entry = await SaveAndCreateDataEntry(requestData, userId);
+
+            PaymentCard paymentCard = new PaymentCard
+            {
+                DataEntry = entry,
+                DataEntryId = entry.Id,
+                CardType = requestData.CardType ?? "",
+                Cvv = requestData.Cvv ?? "",
+                ExpirationDate = requestData.ExpirationDate ?? "",
+                Number = requestData.CardNumber ?? "",
+                Owner = requestData.Owner ?? "",
+                Pin = requestData.Pin ?? ""
+            };
+
+            await dataContext.PaymentCard.AddAsync(paymentCard);
+            dataContext.SaveChanges();
+
+            return paymentCard;
+        }
+
+        private async Task<Login> CreateLogin(DataEntryClientRequest requestData, string userId)
+        {
+            DataEntry entry = await SaveAndCreateDataEntry(requestData, userId);
+
+            Login login = new Login
+            {
+                DataEntryId = entry.Id,
+                Username = requestData.Username ?? "",
+                Password = requestData.Password ?? "",
+                Url = requestData.Url ?? ""
+            };
+            await dataContext.Login.AddAsync(login);
+            dataContext.SaveChanges();
+
+            return login;
+        }
+
+        private async Task<SafeNote> CreateSafeNote(DataEntryClientRequest requestData, string userId)
+        {
+            DataEntry entry = await SaveAndCreateDataEntry(requestData, userId);
+
             SafeNote safeNote = new SafeNote();
-            safeNote.Note = request.Note ?? "";
+            safeNote.Note = requestData.Note ?? "";
+            safeNote.DataEntryId = entry.Id;
+            safeNote.DataEntry = entry;
 
             await dataContext.SafeNote.AddAsync(safeNote);
 

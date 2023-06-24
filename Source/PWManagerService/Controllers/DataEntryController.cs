@@ -86,72 +86,12 @@ namespace PWManagerService.Controllers
             string token = factory.ReadToken(Request.Headers);
 
             (int, object?) dataTuple = await factory.CreateDataEntry(token, dataEntryClientRequest);
-            if(dataTuple.Item1 != 201 )
+            if (dataTuple.Item1 != 201)
             {
                 return StatusCode(dataTuple.Item1);
             }
-
-            //return CreatedAtAction(nameof(GetAllDataEntries), )
-            DataEntry? dataEntry = dataTuple.Item2 as DataEntry;
-
-            throw new NotImplementedException();
-
-            //User user = await dataContext.GetUser(TokenService.GetUserMail(token), userManager);
-
-            
-
-
-
-
-            //await dataContext.DataEntry.AddAsync(_dataEntry);
-            //dataContext.SaveChanges();
-
-            //switch (dataEntryClientRequest.Category)
-            //{
-            //    case "paymentcard":
-            //        PaymentCard paymentCard = new PaymentCard
-            //        {
-            //            DataEntryId = _dataEntry.Id,
-            //            Owner = dataEntryClientRequest.Owner,
-            //            Number = dataEntryClientRequest.CardNumber,
-            //            ExpirationDate = dataEntryClientRequest.ExpirationDate,
-            //            Pin = dataEntryClientRequest.Pin,
-            //            Cvv = dataEntryClientRequest.Cvv
-            //        };
-            //        await dataContext.PaymentCard.AddAsync(paymentCard);
-            //        dataContext.SaveChanges();
-
-            //        return CreatedAtAction(nameof(GetAllDataEntries), new { id = paymentCard.DataEntryId }, paymentCard);
-
-            //    case "login":
-            //        Login login = new Login
-            //        {
-            //            DataEntryId = _dataEntry.Id,
-            //            Username = dataEntryClientRequest.Username,
-            //            Password = dataEntryClientRequest.Password,
-            //            Url = dataEntryClientRequest.Url
-            //        };
-            //        await dataContext.Login.AddAsync(login);
-            //        dataContext.SaveChanges();
-
-            //        return CreatedAtAction(nameof(GetAllDataEntries), new { id = login.DataEntryId }, login);
-
-            //    case "safenote":
-            //        SafeNote safeNote = new SafeNote
-            //        {
-            //            DataEntryId = _dataEntry.Id,
-            //            Note = dataEntryClientRequest.Note,
-            //        };
-            //        await dataContext.SafeNote.AddAsync(safeNote);
-            //        dataContext.SaveChanges();
-            //        return CreatedAtAction(nameof(GetAllDataEntries), new { id = safeNote.DataEntryId }, safeNote);
-            //    default:
-            //        dataContext.DataEntry.Remove(_dataEntry);
-            //        dataContext.SaveChanges();
-
-            //        return BadRequest("Invalid request. Data Entry could not be created.");
-            //}
-
+            else
+                return CreatedAtAction(nameof(GetAllDataEntries), dataTuple.Item2);
         }
 
         [HttpPut, Authorize]

@@ -77,6 +77,9 @@ namespace PWManagerService.Controllers
         public async Task<ActionResult<object>> GetSalt(string email)
         {
             User user = await dataContext.GetUser(email);
+            if (user == null)
+                return NotFound();
+
             return Ok(user.Salt);
         }
 
