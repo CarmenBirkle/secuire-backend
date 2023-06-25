@@ -68,7 +68,7 @@ namespace PWManagerServiceModelEF
             }
         }
 
-        public DataEntry GetDataEntry(int id)
+        public DataEntry? GetDataEntry(int id)
         {
             try
             {
@@ -85,6 +85,15 @@ namespace PWManagerServiceModelEF
             }
            
         }
+
+        public DataEntry? GetDataEntry(int id, string userId)
+        {
+            DataEntry? entry = GetDataEntry(id);
+            if (entry == null) return entry;
+
+            return entry.UserId == userId ? entry : null;
+        }
+
 
         public List<object> GetAllDataEntries(User user)
         {
@@ -222,7 +231,5 @@ namespace PWManagerServiceModelEF
                 return null;
             }
         }
-
-
     }
 }

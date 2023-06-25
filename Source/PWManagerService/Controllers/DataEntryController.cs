@@ -96,125 +96,141 @@ namespace PWManagerService.Controllers
 
         [HttpPut, Authorize]
         [Route("{id:int}")]
-        public async Task<ActionResult<DataEntry>> AlterDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
+        public async Task<ActionResult<object>> AlterDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
-            string category = dataEntryClientRequest.Category;
-
-            if (category == null | (!category.Equals("login") & !category.Equals("safenote") & !category.Equals("paymentcard")))
+            string token = factory.ReadToken(Request.Headers);
+            (int, object?) updatedDataset;
+            try
             {
-                return BadRequest("Invalid category. Data Entry could not be updated.");
+                updatedDataset = await factory.UpdateDataEntry(id, dataEntryClientRequest, token);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
 
-            DataEntry dataEntry = dataContext.GetDataEntry(id);
+            if (updatedDataset.Item1 != 200)
+                return StatusCode(updatedDataset.Item1);
+            else
+                return Ok(updatedDataset.Item2);
 
-            if (dataEntry == null)
-            {
-                string errorMessage = "No Data Entry with the requested Id could be found.";
-                return NotFound(errorMessage);
-            }
+            //string category = dataEntryClientRequest.Category;
 
-            switch (category)
-            {
-                case "login":
-                    Login login = dataContext.GetLogin(id);
+            //if (category == null | (!category.Equals("login") & !category.Equals("safenote") & !category.Equals("paymentcard")))
+            //{
+            //    return BadRequest("Invalid category. Data Entry could not be updated.");
+            //}
 
-                    if (login == null)
-                    {
-                        string errorMessage = "No Login with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //DataEntry dataEntry = dataContext.GetDataEntry(id);
 
-                    // Alter Data Entry:
-                    dataEntry.UserId = "1"; //ToDo: Echten User
-                    dataEntry.Comment = dataEntryClientRequest.Comment;
-                    dataEntry.Favourite = dataEntryClientRequest.Favourite;
-                    dataEntry.Subject = dataEntryClientRequest.Subject;
+            //if (dataEntry == null)
+            //{
+            //    string errorMessage = "No Data Entry with the requested Id could be found.";
+            //    return NotFound(errorMessage);
+            //}
 
-                    // Alter Login:
-                    login.Username = dataEntryClientRequest.Username;
-                    login.Password = dataEntryClientRequest.Password;
-                    login.Url = dataEntryClientRequest.Url;
+            //switch (category)
+            //{
+            //    case "login":
+            //        Login login = dataContext.GetLogin(id);
 
-                    dataContext.SaveChanges();
+            //        if (login == null)
+            //        {
+            //            string errorMessage = "No Login with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
 
-                    Login alteredLogin = dataContext.GetLogin(id);
+            //        // Alter Data Entry:
+            //        dataEntry.UserId = "1"; //ToDo: Echten User
+            //        dataEntry.Comment = dataEntryClientRequest.Comment;
+            //        dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            //        dataEntry.Subject = dataEntryClientRequest.Subject;
 
-                    if (alteredLogin == null)
-                    {
-                        string errorMessage = "No Login with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //        // Alter Login:
+            //        login.Username = dataEntryClientRequest.Username;
+            //        login.Password = dataEntryClientRequest.Password;
+            //        login.Url = dataEntryClientRequest.Url;
 
-                    return Ok(alteredLogin);
+            //        dataContext.SaveChanges();
 
-                case "paymentcard":
-                    PaymentCard paymentCard = dataContext.GetPaymentCard(id);
+            //        Login alteredLogin = dataContext.GetLogin(id);
 
-                    if (paymentCard == null)
-                    {
-                        string errorMessage = "No Payment Card with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //        if (alteredLogin == null)
+            //        {
+            //            string errorMessage = "No Login with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
 
-                    // Alter Data Entry:
-                    dataEntry.UserId = "1"; //ToDo: Echten User
-                    dataEntry.Comment = dataEntryClientRequest.Comment;
-                    dataEntry.Favourite = dataEntryClientRequest.Favourite;
-                    dataEntry.Subject = dataEntryClientRequest.Subject;
+            //        return Ok(alteredLogin);
 
-                    // Alter PaymentCard:
-                    paymentCard.Owner = dataEntryClientRequest.Owner;
-                    paymentCard.Number = dataEntryClientRequest.CardNumber;
-                    paymentCard.ExpirationDate = dataEntryClientRequest.ExpirationDate;
-                    paymentCard.Pin = dataEntryClientRequest.Pin;
-                    paymentCard.Cvv = dataEntryClientRequest.Cvv;
+            //    case "paymentcard":
+            //        PaymentCard paymentCard = dataContext.GetPaymentCard(id);
 
-                    dataContext.SaveChanges();
+            //        if (paymentCard == null)
+            //        {
+            //            string errorMessage = "No Payment Card with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
 
-                    PaymentCard alteredPaymentCard = dataContext.GetPaymentCard(id);
+            //        // Alter Data Entry:
+            //        dataEntry.UserId = "1"; //ToDo: Echten User
+            //        dataEntry.Comment = dataEntryClientRequest.Comment;
+            //        dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            //        dataEntry.Subject = dataEntryClientRequest.Subject;
 
-                    if (alteredPaymentCard == null)
-                    {
-                        string errorMessage = "No Payment Card with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //        // Alter PaymentCard:
+            //        paymentCard.Owner = dataEntryClientRequest.Owner;
+            //        paymentCard.Number = dataEntryClientRequest.CardNumber;
+            //        paymentCard.ExpirationDate = dataEntryClientRequest.ExpirationDate;
+            //        paymentCard.Pin = dataEntryClientRequest.Pin;
+            //        paymentCard.Cvv = dataEntryClientRequest.Cvv;
 
-                    return Ok(alteredPaymentCard);
+            //        dataContext.SaveChanges();
 
-                case "safenote":
-                    SafeNote safenote = dataContext.GetSafeNote(id);
+            //        PaymentCard alteredPaymentCard = dataContext.GetPaymentCard(id);
 
-                    if (safenote == null)
-                    {
-                        string errorMessage = "No Safe Note with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //        if (alteredPaymentCard == null)
+            //        {
+            //            string errorMessage = "No Payment Card with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
 
-                    // Alter Data Entry:
-                    dataEntry.UserId = "1"; //ToDo: Echten User
-                    dataEntry.Comment = dataEntryClientRequest.Comment;
-                    dataEntry.Favourite = dataEntryClientRequest.Favourite;
-                    dataEntry.Subject = dataEntryClientRequest.Subject;
+            //        return Ok(alteredPaymentCard);
 
-                    // Alter SafeNote:
-                    safenote.Note = dataEntryClientRequest.Note;
+            //    case "safenote":
+            //        SafeNote safenote = dataContext.GetSafeNote(id);
 
-                    dataContext.SaveChanges();
+            //        if (safenote == null)
+            //        {
+            //            string errorMessage = "No Safe Note with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
 
-                    SafeNote alteredSafeNote = dataContext.GetSafeNote(id);
+            //        // Alter Data Entry:
+            //        dataEntry.UserId = "1"; //ToDo: Echten User
+            //        dataEntry.Comment = dataEntryClientRequest.Comment;
+            //        dataEntry.Favourite = dataEntryClientRequest.Favourite;
+            //        dataEntry.Subject = dataEntryClientRequest.Subject;
 
-                    if (alteredSafeNote == null)
-                    {
-                        string errorMessage = "No Safe Note with the requested Id could be found.";
-                        return NotFound(errorMessage);
-                    }
+            //        // Alter SafeNote:
+            //        safenote.Note = dataEntryClientRequest.Note;
 
-                    return Ok(alteredSafeNote);
+            //        dataContext.SaveChanges();
 
-                default:
-                    return BadRequest("Invalid request. Data Entry could not be updated.");
+            //        SafeNote alteredSafeNote = dataContext.GetSafeNote(id);
 
-            }
+            //        if (alteredSafeNote == null)
+            //        {
+            //            string errorMessage = "No Safe Note with the requested Id could be found.";
+            //            return NotFound(errorMessage);
+            //        }
+
+            //        return Ok(alteredSafeNote);
+
+            //    default:
+            //        return BadRequest("Invalid request. Data Entry could not be updated.");
+
+            //}
         }
 
         [HttpDelete, Authorize]

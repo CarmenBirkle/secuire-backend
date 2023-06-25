@@ -30,6 +30,114 @@ namespace PWManagerService.Factory
             return dataEntries;
         }
 
+        private async Task<EntryType?> ReadCategory(string category)
+        {
+            object? enumCategory = EntryType.UNDEFINED;
+            if (Enum.TryParse(typeof(EntryType), category.ToUpper(), out enumCategory))
+                return enumCategory as EntryType?;
+            else
+                return null;
+                
+        }
+
+        #region Update
+        public async Task<(int, object?)> UpdateDataEntry(int id, DataEntryClientRequest requestData, string jwtToken)
+        {
+            EntryType? category = await ReadCategory(requestData.Category??"");
+            if (category == null)
+                return (400, null);
+
+            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+
+            DataEntry? entry = dataContext.GetDataEntry(id, user.IdentityUserId);
+            if (entry == null)
+                return (404, null);
+            else
+            {
+                entry.Favourite = requestData.Favourite ?? "";
+                entry.CustomTopics = requestData.CustomTopics ?? "";
+                entry.Comment = requestData.Comment ?? "";
+                entry.SelectedIcon = requestData.SelectedIcon ?? "";
+                entry.Subject = requestData.Subject ?? "";
+            }
+            
+
+            object? updatedData = null;
+
+            switch(category)
+            {
+                case EntryType.PAYMENTCARD:
+                    updatedData = await UpdatePaymentCard(id, requestData, entry);
+                    break;
+
+                case EntryType.SAFENOTE:
+                    updatedData = await UpdateSafeNote(id, requestData, entry);
+                    break;
+
+                case EntryType.LOGIN:
+                    updatedData = await UpdateLogin(id, requestData, entry);
+                    break;
+
+                default:
+                    return (400, null);
+            }
+
+            dataContext.SaveChanges();
+            return (200,  updatedData);
+        }
+
+
+        public async Task<SafeNote?> UpdateSafeNote(int id, DataEntryClientRequest requestData, DataEntry entry)
+        {
+            SafeNote safeNote = dataContext.GetSafeNote(id);
+
+            if (safeNote == null) return null;
+
+            safeNote.DataEntry = entry;
+            safeNote.DataEntryId = entry.Id;
+            safeNote.Note = requestData.Note??"";
+
+            return safeNote;
+        }
+
+
+        public async Task<Login?> UpdateLogin(int id, DataEntryClientRequest requestData, DataEntry entry)
+        {
+            Login login = dataContext.GetLogin(id);
+
+            if (login == null) return null;
+
+            login.DataEntry = entry;
+            login.DataEntryId = entry.Id;
+
+            login.Username = requestData.Username ?? "";
+            login.Password = requestData.Password ?? "";
+            login.Url = requestData.Url ?? "";
+
+            return login;
+        }
+
+        public async Task<PaymentCard?> UpdatePaymentCard(int id, DataEntryClientRequest requestData, DataEntry entry)
+        {
+            PaymentCard paymentCard = dataContext.GetPaymentCard(id);
+            if (paymentCard == null) return null;
+
+            paymentCard.DataEntry = entry;
+            paymentCard.DataEntryId = entry.Id;
+
+            paymentCard.Owner = requestData.Owner ?? "";
+            paymentCard.Number = requestData.CardNumber ?? "";
+            paymentCard.ExpirationDate = requestData.ExpirationDate ?? "";
+            paymentCard.Pin = requestData.Pin ?? "";
+            paymentCard.Cvv = requestData.Cvv ?? "";
+            paymentCard.CardType = requestData.CardType ?? "";
+
+            return paymentCard;
+        }
+        #endregion
+
+        #region Create
+
         /// <summary>
         /// 
         /// </summary>
@@ -39,8 +147,8 @@ namespace PWManagerService.Factory
         /// <exception cref="Exception"></exception>
         public async Task<(int, object?)> CreateDataEntry(string jwtToken, DataEntryClientRequest requestData)
         {
-            object? category = EntryType.UNDEFINED;
-            if (!Enum.TryParse(typeof(EntryType), (requestData.Category ?? "").ToUpper(), out category))
+            EntryType? category = await ReadCategory(requestData.Category ?? "");
+            if (category == null)
                 return (400, null);
 
             User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
@@ -140,6 +248,7 @@ namespace PWManagerService.Factory
             return safeNote;
         }
 
+        #endregion
 
         /// <summary>
         /// liest JWT Token aus Header
