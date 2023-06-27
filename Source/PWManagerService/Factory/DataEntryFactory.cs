@@ -3,6 +3,7 @@ using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
 using PWManagerService.Controllers;
 using PWManagerServiceModelEF;
+using System.Diagnostics.Eventing.Reader;
 
 namespace PWManagerService.Factory
 {
@@ -39,6 +40,33 @@ namespace PWManagerService.Factory
                 return null;
                 
         }
+
+        #region Delete
+
+        public async Task<int> DeleteDataEntry(string jwtToken, int entryId)
+        {
+            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+
+            (object?, DataEntry?) fullEntry = dataContext.GetFullEntry(entryId, user.IdentityUserId);
+            if (fullEntry.Item1 == null || fullEntry.Item2 == null)
+                return 404;
+
+            Type childEntryType = fullEntry.Item1.GetType();
+            if (childEntryType == typeof(Login))
+                dataContext.Login.Remove((Login)fullEntry.Item1);
+            else if(childEntryType == typeof(SafeNote))
+                dataContext.SafeNote.Remove((SafeNote)fullEntry.Item1);
+            else if (childEntryType == typeof(PaymentCard))
+                dataContext.PaymentCard.Remove((PaymentCard)fullEntry.Item1);
+
+            dataContext.DataEntry.Remove((DataEntry)fullEntry.Item2);
+
+            dataContext.SaveChanges();
+
+            return 200;
+        }
+
+        #endregion
 
         #region Update
         public async Task<(int, object?)> UpdateDataEntry(int id, DataEntryClientRequest requestData, string jwtToken)

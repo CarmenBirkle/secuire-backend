@@ -32,8 +32,6 @@ namespace PWManagerService.Controllers
             this.factory = new DataEntryFactory(dataContext, userManager, logger);
         }
 
-        #region NewMethods
-
         [HttpGet, Authorize]
         [Route("all")]
         public async Task<ActionResult<List<object>>> GetAllDataEntries()
@@ -79,7 +77,6 @@ namespace PWManagerService.Controllers
 
         //}
 
-
         [HttpPost, Authorize]
         public async Task<ActionResult<(string, object)>> PostDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
@@ -117,53 +114,17 @@ namespace PWManagerService.Controllers
 
         [HttpDelete, Authorize]
         [Route("{id:int}")]
-        public async Task<ActionResult<DataEntry>> DeleteDataEntryById(int id)
+        public async Task<ActionResult<int>> DeleteDataEntryById(int id)
         {
-            DataEntry dataEntry = dataContext.GetDataEntry(id);
-
-            if (dataEntry == null)
+            string token = factory.ReadToken(Request.Headers);
+            try
             {
-                string errorMessage = "No Data Entry with the requested Id could be found.";
-                return NotFound(errorMessage);
+                return StatusCode(await factory.DeleteDataEntry(token, id));
             }
-
-            PaymentCard paymentCard = dataContext.GetPaymentCard(id);
-            SafeNote safeNote = dataContext.GetSafeNote(id);
-            Login login = dataContext.GetLogin(id);
-
-            if (!(paymentCard == null))
+            catch(Exception ex)
             {
-                dataContext.DataEntry.Remove(dataEntry);
-                dataContext.PaymentCard.Remove(paymentCard);
-
-                dataContext.SaveChanges();
-
-                return Ok("Payment Card got deleted successfully");
+                return StatusCode(500, ex.Message);
             }
-            else if (!(login == null))
-            {
-                dataContext.DataEntry.Remove(dataEntry);
-                dataContext.Login.Remove(login);
-
-                dataContext.SaveChanges();
-
-                return Ok("Login got deleted successfully");
-            }
-            else if (!(safeNote == null))
-            {
-                dataContext.DataEntry.Remove(dataEntry);
-                dataContext.SafeNote.Remove(safeNote);
-
-                dataContext.SaveChanges();
-
-                return Ok("Safe Note got deleted successfully");
-            }
-            else
-            {
-                return NotFound("Data Entry with the requested id not found.");
-            }
-
         }
-        #endregion
     }
 }

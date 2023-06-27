@@ -109,6 +109,21 @@ namespace PWManagerServiceModelEF
             return dataEntries;
         }
       
+        public (object?, DataEntry?) GetFullEntry(int id, string userId)
+        {
+            DataEntry? entry = GetDataEntry(id, userId);
+            if (entry == null)
+                return (null, null);
+
+            Login? login = GetLogin(id);
+            if (login != null) return (login, entry);
+            PaymentCard? paymentCard = GetPaymentCard(id);
+            if(paymentCard != null) return (paymentCard, entry);
+            SafeNote? safeNote = GetSafeNote(id);
+            if(safeNote != null) return (safeNote, entry);
+
+            return (null, null);
+        }
 
         public List<PaymentCard> GetPaymentCard()
         {
