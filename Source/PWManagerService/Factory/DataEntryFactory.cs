@@ -19,6 +19,8 @@ namespace PWManagerService.Factory
             this.userManager = userManager;
         }
 
+
+        #region Get
         /// <summary>
         /// Liefert alle Dataentry Eintraege eines Users zurueck
         /// </summary>
@@ -40,6 +42,7 @@ namespace PWManagerService.Factory
                 return null;
                 
         }
+        #endregion
 
         #region Delete
 
@@ -278,14 +281,5 @@ namespace PWManagerService.Factory
 
         #endregion
 
-        /// <summary>
-        /// liest JWT Token aus Header
-        /// </summary>
-        /// <param name="headers"></param>
-        /// <returns></returns>
-        public string ReadToken(IHeaderDictionary headers)
-        {
-            return headers.Authorization.ToString().Replace("Bearer ", "");
-        }
     }
 }

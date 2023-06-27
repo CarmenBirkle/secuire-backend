@@ -11,6 +11,17 @@ namespace PWManagerService
     {
         private const int ExpirationMinutes = 3000; // ToDo: In Konfig auslagern
 
+
+        /// <summary>
+        /// liest JWT Token aus Header
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <returns></returns>
+        public static string ReadToken(IHeaderDictionary headers)
+        {
+            return headers.Authorization.ToString().Replace("Bearer ", "");
+        }
+
         public static string GetUserMail(string jwtToken)
         {
             string email = string.Empty;
@@ -34,13 +45,14 @@ namespace PWManagerService
 
         public string CreateToken(IdentityUser user)
         {
-            var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
-            var token = CreateJwtToken(
+            DateTime expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
+            JwtSecurityToken token = CreateJwtToken(
                 CreateClaims(user),
                 CreateSigningCredentials(),
                 expiration
             );
-            var tokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+
             return tokenHandler.WriteToken(token);
         }
 

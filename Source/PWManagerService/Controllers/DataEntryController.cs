@@ -38,7 +38,7 @@ namespace PWManagerService.Controllers
         {
             try
             {
-                string token = factory.ReadToken(Request.Headers);
+                string token = TokenService.ReadToken(Request.Headers);
                 List<object> dataEntries = await factory.GetAllDataEntries(token, userManager);
                 return Ok(dataEntries);
             }
@@ -80,7 +80,7 @@ namespace PWManagerService.Controllers
         [HttpPost, Authorize]
         public async Task<ActionResult<(string, object)>> PostDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
-            string token = factory.ReadToken(Request.Headers);
+            string token = TokenService.ReadToken(Request.Headers);
 
             (int, object?) dataTuple = await factory.CreateDataEntry(token, dataEntryClientRequest);
             if (dataTuple.Item1 != 201)
@@ -95,7 +95,7 @@ namespace PWManagerService.Controllers
         [Route("{id:int}")]
         public async Task<ActionResult<object>> AlterDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
         {
-            string token = factory.ReadToken(Request.Headers);
+            string token = TokenService.ReadToken(Request.Headers);
             (int, object?) updatedDataset;
             try
             {
@@ -116,7 +116,7 @@ namespace PWManagerService.Controllers
         [Route("{id:int}")]
         public async Task<ActionResult<int>> DeleteDataEntryById(int id)
         {
-            string token = factory.ReadToken(Request.Headers);
+            string token = TokenService.ReadToken(Request.Headers);
             try
             {
                 return StatusCode(await factory.DeleteDataEntry(token, id));

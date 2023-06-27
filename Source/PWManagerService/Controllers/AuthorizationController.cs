@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace PWManagerService.Controllers
         private readonly UserManager<IdentityUser> userManager;
         private DataContext dataContext;
         private readonly TokenService tokenService;
+        private AuthorizationFactory factory;
 
         public AuthorizationController(UserManager<IdentityUser> userManager, ILogger<AuthorizationController> logger, DataContext dataContext, TokenService tokenService)
         {
@@ -24,7 +26,23 @@ namespace PWManagerService.Controllers
             this.userManager = userManager;
             this.dataContext = dataContext;
             this.tokenService = tokenService;
+            this.factory = new AuthorizationFactory(dataContext, userManager, logger);
         }
+
+
+        /// <summary>
+        /// JWT kann nicht entwertet werden...
+        /// </summary>
+        /// <returns></returns>
+        //[HttpPost]
+        //[Route("logout")]
+        //public async Task<IActionResult> LogOut()
+        //{
+        //    string token = TokenService.ReadToken(Request.Headers);
+        //    int statusCode = await factory.LogOut(token);
+        //    return StatusCode(statusCode);
+
+        //}
 
 
         [HttpPost]
@@ -70,6 +88,13 @@ namespace PWManagerService.Controllers
 
 
             return BadRequest(ModelState);
+        }
+
+        [HttpDelete, Authorize]
+        public async Task<IActionResult>DeleteAccount()
+        {
+            int statusCode = await factory.DeleteAccount(TokenService.ReadToken(Request.Headers));
+            return StatusCode(statusCode);
         }
 
         [HttpGet]
