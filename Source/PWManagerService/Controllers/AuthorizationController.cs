@@ -117,7 +117,7 @@ namespace PWManagerService.Controllers
                 return BadRequest(ModelState);
             }
 
-            User user = await dataContext.GetUser(loginData.Email, userManager);
+            User? user = await dataContext.GetUser(loginData.Email, userManager);
 
             if (user == null)
             {
@@ -126,7 +126,9 @@ namespace PWManagerService.Controllers
             bool isPasswordValid = await userManager.CheckPasswordAsync(user.IdentityUser, loginData.HashedPassword);
             if (!isPasswordValid)
             {
-                return Unauthorized("Password invalide");
+                user.FailedLogins++;
+                dataContext.SaveChanges();
+                return BadRequest("Bad credentials");
             }
 
             user.JwtToken = tokenService.CreateToken(user.IdentityUser);
