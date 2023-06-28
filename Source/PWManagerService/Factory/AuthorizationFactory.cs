@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.VisualBasic;
+using PWManagerService.Model;
 using PWManagerServiceModelEF;
 using System.ComponentModel;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Serialization;
 
 namespace PWManagerService
@@ -17,6 +19,50 @@ namespace PWManagerService
             this.dataContext = dataContext;
             this.logger = logger;
             this.userManager = userManager;
+        }
+
+
+        public async Task<(User?, int)> UpdateAccount(string jwtToken, RegistrationData updatedUser)
+        {
+            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+            if (user == null) return (null, 400);
+
+            Task<IdentityResult> taskChangeMail = null;
+            Task<IdentityResult> taskChangeUsername = null;
+            Task<IdentityResult> taskChangePassword = null;
+
+            IdentityUser dummyUser = new IdentityUser();
+            dummyUser.PasswordHash = updatedUser.HashedPassword;
+
+            // ToDo: Passwort irgendwie sauber abgleichen.... oder einfach draufknallen??
+            PasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
+            string hashedPw = passwordHasher.HashPassword(dummyUser, dummyUser.PasswordHash);
+
+
+            return (null, 0);
+
+
+            if (user.IdentityUser.Email != updatedUser.Email)
+                taskChangeMail = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, jwtToken);
+            if (user.IdentityUser.PasswordHash != updatedUser.HashedPassword)
+            {
+                taskChangePassword = userManager.ChangePasswordAsync(user.IdentityUser, user.IdentityUser.PasswordHash, updatedUser.HashedPassword);
+
+            }
+            if (user.IdentityUser.UserName != updatedUser.Username)
+                taskChangeUsername = userManager.SetUserNameAsync(user.IdentityUser, updatedUser.Username);
+            user.AgbAcceptedAt = updatedUser.AgbAcceptedAt;
+            user.PasswordHint = updatedUser.PasswordHint;
+            user.Salt = updatedUser.Salt;
+
+            if (taskChangeMail != null) taskChangeMail.Wait();
+            if (taskChangeUsername != null) taskChangeUsername.Wait();
+            if (taskChangePassword != null) taskChangePassword.Wait();
+
+            dataContext.SaveChanges();
+
+            return (user, 200);
+
         }
 
         public async Task<int> DeleteAccount(string jwtToken)

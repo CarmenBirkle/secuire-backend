@@ -47,7 +47,7 @@ namespace PWManagerService.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegistrationData userData)
+        public async Task<ActionResult> Register([FromBody] RegistrationData userData)
         {
             IdentityUser identUser = new IdentityUser();
             identUser.Email = userData.Email;
@@ -79,7 +79,7 @@ namespace PWManagerService.Controllers
                 dataContext.SaveChanges();
                 return CreatedAtAction(nameof(Register), new { email = identUser.Email }, user);
             }
-            
+
 
             foreach (var error in result.Errors)
             {
@@ -91,7 +91,7 @@ namespace PWManagerService.Controllers
         }
 
         [HttpDelete, Authorize]
-        public async Task<IActionResult>DeleteAccount()
+        public async Task<ActionResult> DeleteAccount()
         {
             int statusCode = await factory.DeleteAccount(TokenService.ReadToken(Request.Headers));
             return StatusCode(statusCode);
@@ -128,11 +128,35 @@ namespace PWManagerService.Controllers
             {
                 return Unauthorized("Password invalide");
             }
-            
+
             user.JwtToken = tokenService.CreateToken(user.IdentityUser);
             await dataContext.SaveChangesAsync();
-  
+
             return Ok(user);
+        }
+
+        [HttpPut, Authorize]
+        public async Task<ActionResult<User>> PutUser([FromBody] RegistrationData updatedUser)
+        {
+            string jwtToken = TokenService.ReadToken(Request.Headers);
+            (User?, int) updatedResult = (new User(), 0);
+            try
+            {
+                updatedResult = await factory.UpdateAccount(jwtToken, updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            if (updatedResult.Item1 == null || updatedResult.Item2 == 400)
+            {
+                return BadRequest();
+            }
+            else if (updatedResult.Item1 != null && updatedResult.Item2 == 200)
+                return Ok(updatedResult.Item1);
+            else 
+                return StatusCode(500);
         }
 
     }

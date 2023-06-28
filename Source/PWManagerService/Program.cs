@@ -112,6 +112,7 @@ namespace PWManagerService
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
+                
             })
                 .AddEntityFrameworkStores<DataContext>();
 
