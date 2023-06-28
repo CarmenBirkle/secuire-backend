@@ -47,7 +47,7 @@ namespace PWManagerService.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<ActionResult> Register([FromBody] RegistrationData userData)
+        public async Task<ActionResult> Register([FromBody] AccountPostPutData userData)
         {
             IdentityUser identUser = new IdentityUser();
             identUser.Email = userData.Email;
@@ -136,7 +136,7 @@ namespace PWManagerService.Controllers
         }
 
         [HttpPut, Authorize]
-        public async Task<ActionResult<User>> PutUser([FromBody] RegistrationData updatedUser)
+        public async Task<ActionResult<User>> PutUser([FromBody] AccountPostPutData updatedUser)
         {
             string jwtToken = TokenService.ReadToken(Request.Headers);
             (User?, int) updatedResult = (new User(), 0);
@@ -149,7 +149,7 @@ namespace PWManagerService.Controllers
                 return StatusCode(500, ex.Message);
             }
 
-            if (updatedResult.Item1 == null || updatedResult.Item2 == 400)
+            if (updatedResult.Item2 == 400)
             {
                 return BadRequest();
             }

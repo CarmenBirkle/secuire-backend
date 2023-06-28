@@ -52,7 +52,7 @@ namespace PWManagerServiceModelEF
         public DbSet<PaymentCard> PaymentCard { get; set; }
         public DbSet<SafeNote> SafeNote { get; set; }
 
-        public async Task<User> GetUser(string email, UserManager<IdentityUser> userManager = null)
+        public async Task<User?> GetUser(string email, UserManager<IdentityUser> userManager = null)
         {
             try
             {

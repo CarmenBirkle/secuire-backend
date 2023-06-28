@@ -22,52 +22,69 @@ namespace PWManagerService
         }
 
 
-        public async Task<(User?, int)> UpdateAccount(string jwtToken, RegistrationData updatedUser)
+        public async Task<(User?, int)> UpdateAccount(string jwtToken, AccountPostPutData updatedUser)
         {
             User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
             if (user == null) return (null, 400);
 
-            Task<IdentityResult> taskChangeMail = null;
-            Task<IdentityResult> taskChangeUsername = null;
-            Task<IdentityResult> taskChangePassword = null;
-
-            IdentityUser dummyUser = new IdentityUser();
-            dummyUser.PasswordHash = updatedUser.HashedPassword;
-
-            // ToDo: Passwort irgendwie sauber abgleichen.... oder einfach draufknallen??
-            PasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
-            string hashedPw = passwordHasher.HashPassword(dummyUser, dummyUser.PasswordHash);
-
-
-            return (null, 0);
+            List<Task<IdentityResult>> tasks = new List<Task<IdentityResult>>();
+            string oldUsername = string.Empty;
+            string oldMail = string.Empty;
 
 
             if (user.IdentityUser.Email != updatedUser.Email)
-                taskChangeMail = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, jwtToken);
-            if (user.IdentityUser.PasswordHash != updatedUser.HashedPassword)
             {
-                taskChangePassword = userManager.ChangePasswordAsync(user.IdentityUser, user.IdentityUser.PasswordHash, updatedUser.HashedPassword);
+                oldMail = user.IdentityUser.Email;
+                Task<IdentityResult> task = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, jwtToken);
+                tasks.Add(task);
 
             }
+            if (!string.IsNullOrEmpty(updatedUser.NewHashedPassword))
+            {
+                Task<IdentityResult> task = userManager.ChangePasswordAsync(user.IdentityUser, updatedUser.HashedPassword, updatedUser.NewHashedPassword);
+                tasks.Add(task);
+            }
+
             if (user.IdentityUser.UserName != updatedUser.Username)
-                taskChangeUsername = userManager.SetUserNameAsync(user.IdentityUser, updatedUser.Username);
+            {
+                oldUsername = user.IdentityUser.UserName??"";
+                Task<IdentityResult> task = userManager.SetUserNameAsync(user.IdentityUser, updatedUser.Username);
+                tasks.Add(task);
+            }
             user.AgbAcceptedAt = updatedUser.AgbAcceptedAt;
             user.PasswordHint = updatedUser.PasswordHint;
             user.Salt = updatedUser.Salt;
 
-            if (taskChangeMail != null) taskChangeMail.Wait();
-            if (taskChangeUsername != null) taskChangeUsername.Wait();
-            if (taskChangePassword != null) taskChangePassword.Wait();
+            bool tasksSucceeded = true;
+            tasks.ForEach(
+                task =>
+                {
+                    task.Wait();
+                    if (!task.Result.Succeeded) tasksSucceeded = false;
+                });
 
-            dataContext.SaveChanges();
-
-            return (user, 200);
+            if (!tasksSucceeded)
+            {
+                //Rollback
+                if (!string.IsNullOrEmpty(oldUsername))
+                    await userManager.SetUserNameAsync(user.IdentityUser, oldUsername);
+                if (!string.IsNullOrEmpty(oldMail))
+                    await userManager.ChangeEmailAsync(user.IdentityUser, oldMail, jwtToken);
+                if (!string.IsNullOrEmpty(updatedUser.NewHashedPassword))
+                    await userManager.ChangePasswordAsync(user.IdentityUser, updatedUser.NewHashedPassword, updatedUser.HashedPassword);
+                return (null, 500);
+            }
+            else
+            {
+                dataContext.SaveChanges();
+                return (user, 200);
+            }
 
         }
 
         public async Task<int> DeleteAccount(string jwtToken)
         {
-            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+            User? user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
             if (user == null)
                 return 404;
 
