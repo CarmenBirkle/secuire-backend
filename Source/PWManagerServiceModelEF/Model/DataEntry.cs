@@ -24,5 +24,7 @@ namespace PWManagerServiceModelEF
         public string CustomTopics { get; set; }
 
         //public User User { get; set; }
+        [NotMapped]
+        public string Category { get; set; }
     }
 }

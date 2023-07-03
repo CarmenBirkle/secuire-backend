@@ -99,8 +99,11 @@ namespace PWManagerServiceModelEF
         {
             List<object> dataEntries = new List<object>();
             List<PaymentCard> paymentCards = this.GetPaymentCard().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList();
+            paymentCards.ForEach(pc => pc.DataEntry.Category = "paymentcard");
             List<SafeNote> safeNotes = this.GetSafeNote().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList();
+            safeNotes.ForEach(sn => sn.DataEntry.Category = "safenote");
             List<Login> logins = this.GetLogin().Where(x => x.DataEntry.UserId == user.IdentityUserId).ToList(); ;
+            logins.ForEach(l => l.DataEntry.Category = "login");
 
             dataEntries.AddRange(paymentCards);
             dataEntries.AddRange(safeNotes);
