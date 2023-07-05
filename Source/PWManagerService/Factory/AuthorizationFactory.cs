@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.VisualBasic;
 using PWManagerService.Model;
 using PWManagerServiceModelEF;
@@ -14,13 +15,49 @@ namespace PWManagerService
         private DataContext dataContext;
         private ILogger logger;
         private UserManager<IdentityUser> userManager;
-        public AuthorizationFactory(DataContext dataContext, UserManager<IdentityUser> userManager, ILogger logger)
+        private TokenService tokenService;
+        public AuthorizationFactory(DataContext dataContext, UserManager<IdentityUser> userManager, ILogger logger, TokenService tokenService)
         {
             this.dataContext = dataContext;
             this.logger = logger;
             this.userManager = userManager;
+            this.tokenService = tokenService;
         }
 
+        public async Task<(User?, int)> Login(AuthentificationData loginData)
+        {
+            User? user = await dataContext.GetUser(loginData.Email, userManager);
+
+            if(user == null)
+                return (null, 400);
+
+            List<UserFailedLoginHistory> failedLoginHistory = dataContext.GetUserFailedLoginHistory(user);
+            failedLoginHistory = failedLoginHistory.Where(h => h.TimeStamp.AddSeconds((double)Appsettings.Instance.BlockUserTimespanInSec) >= DateTime.Now).ToList();
+            if (failedLoginHistory.Count >= Appsettings.Instance.BlockUserTries)
+                return (null, 403);
+
+
+            bool isPasswordValid = await userManager.CheckPasswordAsync(user.IdentityUser, loginData.HashedPassword);
+            if(!isPasswordValid)
+            {
+                UserFailedLoginHistory historyEntry = new UserFailedLoginHistory();
+                historyEntry.TimeStamp = DateTime.Now;
+                historyEntry.UserId = user.IdentityUser.Id;
+                dataContext.UserFailedLoginHistories.Add(historyEntry);
+                await dataContext.SaveChangesAsync();
+
+                return (null, 400);
+            }
+
+            user.JwtToken = tokenService.CreateToken(user.IdentityUser);
+            await dataContext.SaveChangesAsync();
+
+            user.DataEntries = dataContext.GetDataEntry(user.IdentityUserId);
+            dataContext.DeleteUserFailedLoginHistory(user);
+            dataContext.SaveChanges();
+            return (user, 200);
+
+        }
 
         public async Task<(User?, int)> UpdateAccount(string jwtToken, AccountPostPutData updatedUser)
         {

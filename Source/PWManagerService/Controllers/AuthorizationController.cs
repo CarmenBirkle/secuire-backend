@@ -26,7 +26,7 @@ namespace PWManagerService.Controllers
             this.userManager = userManager;
             this.dataContext = dataContext;
             this.tokenService = tokenService;
-            this.factory = new AuthorizationFactory(dataContext, userManager, logger);
+            this.factory = new AuthorizationFactory(dataContext, userManager, logger, tokenService);
         }
 
 
@@ -108,34 +108,43 @@ namespace PWManagerService.Controllers
             return Ok(user.Salt);
         }
 
+        [HttpGet]
+        [Route("Hint")]
+        public async Task<ActionResult<string>> GetHint(string email)
+        {
+            User user = await dataContext.GetUser(email);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user.PasswordHint);
+        }
+
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<object>> Authenticate([FromBody] AuthentificationData loginData)
+        public async Task<ActionResult<User>> Authenticate([FromBody] AuthentificationData loginData)
         {
+            (User?, int) factoryResult = new();
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            User? user = await dataContext.GetUser(loginData.Email, userManager);
-
-            if (user == null)
+            try
             {
-                return BadRequest("Bad credentials");
+                factoryResult = await factory.Login(loginData);
             }
-            bool isPasswordValid = await userManager.CheckPasswordAsync(user.IdentityUser, loginData.HashedPassword);
-            if (!isPasswordValid)
+            catch (Exception ex)
             {
-                user.FailedLogins++;
-                dataContext.SaveChanges();
-                return BadRequest("Bad credentials");
+                return StatusCode(500, ex.Message);
             }
+            if (factoryResult.Item2 == 400)
+                return BadRequest("Bad Credentials");
+            else if (factoryResult.Item2 == 403)
+                return StatusCode(403, "User is blocked, try again later ");
+            else if (factoryResult.Item2 == 200)
+                return Ok(factoryResult.Item1);
 
-            user.JwtToken = tokenService.CreateToken(user.IdentityUser);
-            await dataContext.SaveChangesAsync();
-
-            return Ok(user);
+            return StatusCode(500);
         }
+
 
         [HttpPut, Authorize]
         public async Task<ActionResult<User>> PutUser([FromBody] AccountPostPutData updatedUser)
@@ -157,7 +166,7 @@ namespace PWManagerService.Controllers
             }
             else if (updatedResult.Item1 != null && updatedResult.Item2 == 200)
                 return Ok(updatedResult.Item1);
-            else 
+            else
                 return StatusCode(500);
         }
 

@@ -134,19 +134,6 @@ namespace PWManagerService
                     });
             });
 
-            // zur Limitierung von Aufrufen innerhalb eines Zeitraumes
-            // Es wird je Aufruf unabh�ngig vom Endpunkt gez�hlt
-            // abh�ngig vom Aufrufenden (IP-Adresse)?
-            builder.Services.AddRateLimiter(_ => _
-                .AddFixedWindowLimiter(policyName: "fixed", options =>
-                {
-                    // Anzahl der Anfragen in Zeitraum
-                    options.PermitLimit = Appsettings.Instance.oRateLimit.PermitLimit;
-                    // Zeitraum
-                    options.Window = TimeSpan.FromMinutes(Appsettings.Instance.oRateLimit.TimeWindowInMinutes);
-                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    options.QueueLimit = Appsettings.Instance.oRateLimit.QueueLimit;
-                }));
 
 
 

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Runtime.Serialization;
 
 namespace PWManagerServiceModelEF
 {
@@ -42,6 +43,8 @@ namespace PWManagerServiceModelEF
             modelBuilder.Entity<SafeNote>();
             modelBuilder.Entity<User>();
             modelBuilder.Entity<PaymentCard>();
+            modelBuilder.Entity<Configuration>();
+            modelBuilder.Entity<UserFailedLoginHistory>();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -51,6 +54,26 @@ namespace PWManagerServiceModelEF
         public DbSet<Login> Login { get; set; }
         public DbSet<PaymentCard> PaymentCard { get; set; }
         public DbSet<SafeNote> SafeNote { get; set; }
+        public DbSet<Configuration> Configuration { get; set; }
+        public DbSet<UserFailedLoginHistory> UserFailedLoginHistories { get; set; }
+
+
+        public void DeleteUserFailedLoginHistory(User user)
+        {
+            List<UserFailedLoginHistory> history = UserFailedLoginHistories.Where(u => u.UserId == user.IdentityUserId).ToList();
+            UserFailedLoginHistories.RemoveRange(history);
+        }
+
+        public List<UserFailedLoginHistory> GetUserFailedLoginHistory(User user)
+        {
+            List<UserFailedLoginHistory> history = UserFailedLoginHistories.Where(h => h.UserId == user.IdentityUserId).OrderBy(h => h.TimeStamp).ToList();
+            return history;
+        }
+
+        public Configuration? GetConfiguration(string key)
+        {
+            return Configuration.FirstOrDefault(x => x.Key == key);
+        }
 
         public async Task<User?> GetUser(string email, UserManager<IdentityUser> userManager = null)
         {
@@ -92,6 +115,13 @@ namespace PWManagerServiceModelEF
             if (entry == null) return entry;
 
             return entry.UserId == userId ? entry : null;
+        }
+
+        public List<DataEntry> GetDataEntry(string userId)
+        {
+            List<DataEntry> entryList = new List<DataEntry>();
+            entryList = this.DataEntry.Where(entry => entry.UserId == userId).ToList();
+            return entryList;
         }
 
 

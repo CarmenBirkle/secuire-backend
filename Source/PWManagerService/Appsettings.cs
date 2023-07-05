@@ -28,32 +28,15 @@
         private Appsettings()
         {
             _configuration = Program.Configuration;
-            this.TestValue = _configuration.GetValue<string>("TestValue") ?? "";
-            this.Db_connectionstring = _configuration.GetValue<string>("Db_connectionstring") ?? "";
+            this.Db_connectionstring = _configuration.GetValue<string>(nameof(Db_connectionstring)) ?? "";
 
-            int permitLimit = _configuration.GetSection("RateLimit").GetValue<int>("PermitLimit");
-            int timeWindowinMinutes = _configuration.GetSection("RateLimit").GetValue<int>("TimeWindowInMinutes");
-            int queueLimit = _configuration.GetSection("RateLimit").GetValue<int>("QueueLimit");
-            this.oRateLimit = new RateLimit(permitLimit, timeWindowinMinutes, queueLimit);
+            this.BlockUserTimespanInSec = _configuration.GetValue<uint>(nameof(BlockUserTimespanInSec));
+            this.BlockUserTries = _configuration.GetValue<uint>(nameof(BlockUserTries));
+            
         }
 
-        public string TestValue { get; private set; }
         public string Db_connectionstring { get; private set; }
-        public RateLimit oRateLimit { get; private set; }
-
-        public class RateLimit
-        {
-            public RateLimit(int permitLimit, int timeWindowInMinutes, int queueLimit)
-            {
-                this.PermitLimit = permitLimit;
-                this.TimeWindowInMinutes = timeWindowInMinutes;
-                this.QueueLimit = queueLimit;
-            }
-
-            public int PermitLimit { get; private set; }
-            public int TimeWindowInMinutes { get; private set; }
-            public int QueueLimit { get; private set; }
-        }
-
+        public uint BlockUserTimespanInSec { get; private set; }
+        public uint BlockUserTries { get; private set; }
     }
 }
