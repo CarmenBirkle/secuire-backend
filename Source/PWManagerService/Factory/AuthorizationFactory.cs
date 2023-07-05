@@ -32,8 +32,8 @@ namespace PWManagerService
                 return (null, 400);
 
             List<UserFailedLoginHistory> failedLoginHistory = dataContext.GetUserFailedLoginHistory(user);
-            failedLoginHistory = failedLoginHistory.Where(h => h.TimeStamp.AddSeconds((double)Appsettings.Instance.BlockUserTimespanInSec) >= DateTime.Now).ToList();
-            if (failedLoginHistory.Count >= Appsettings.Instance.BlockUserTries)
+            List<UserFailedLoginHistory> relevantFailedLoginHistory = failedLoginHistory.Where(h => h.TimeStamp.AddSeconds((double)Appsettings.Instance.BlockUserTimespanInSec) >= DateTime.Now).ToList();
+            if (relevantFailedLoginHistory.Count >= Appsettings.Instance.BlockUserTries)
                 return (null, 403);
 
 
@@ -53,6 +53,7 @@ namespace PWManagerService
             await dataContext.SaveChangesAsync();
 
             user.DataEntries = dataContext.GetDataEntry(user.IdentityUserId);
+            user.FailedLogins = failedLoginHistory.Count;
             dataContext.DeleteUserFailedLoginHistory(user);
             dataContext.SaveChanges();
             return (user, 200);
@@ -61,7 +62,7 @@ namespace PWManagerService
 
         public async Task<(User?, int)> UpdateAccount(string jwtToken, AccountPostPutData updatedUser)
         {
-            User user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
+            User? user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
             if (user == null) return (null, 400);
 
             List<Task<IdentityResult>> tasks = new List<Task<IdentityResult>>();
@@ -72,9 +73,9 @@ namespace PWManagerService
             if (user.IdentityUser.Email != updatedUser.Email)
             {
                 oldMail = user.IdentityUser.Email;
-                Task<IdentityResult> task = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, jwtToken);
+                string emailToken = await userManager.GenerateChangeEmailTokenAsync(user.IdentityUser, updatedUser.Email);
+                Task<IdentityResult> task = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, emailToken);
                 tasks.Add(task);
-
             }
             if (!string.IsNullOrEmpty(updatedUser.NewHashedPassword))
             {
@@ -106,13 +107,17 @@ namespace PWManagerService
                 if (!string.IsNullOrEmpty(oldUsername))
                     await userManager.SetUserNameAsync(user.IdentityUser, oldUsername);
                 if (!string.IsNullOrEmpty(oldMail))
-                    await userManager.ChangeEmailAsync(user.IdentityUser, oldMail, jwtToken);
+                {
+                    string emailToken = await userManager.GenerateChangeEmailTokenAsync(user.IdentityUser, oldMail);
+                    await userManager.ChangeEmailAsync(user.IdentityUser, oldMail, emailToken);
+                }
                 if (!string.IsNullOrEmpty(updatedUser.NewHashedPassword))
                     await userManager.ChangePasswordAsync(user.IdentityUser, updatedUser.NewHashedPassword, updatedUser.HashedPassword);
                 return (null, 500);
             }
             else
             {
+                user.JwtToken = tokenService.CreateToken(user.IdentityUser);
                 dataContext.SaveChanges();
                 return (user, 200);
             }
