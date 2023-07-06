@@ -65,41 +65,47 @@ namespace PWManagerService
             User? user = await dataContext.GetUser(TokenService.GetUserMail(jwtToken), userManager);
             if (user == null) return (null, 400);
 
-            List<Task<IdentityResult>> tasks = new List<Task<IdentityResult>>();
+            //List<Task<IdentityResult>> tasks = new List<Task<IdentityResult>>();
             string oldUsername = string.Empty;
             string oldMail = string.Empty;
 
 
+            bool tasksSucceeded = true;
             if (user.IdentityUser.Email != updatedUser.Email)
             {
                 oldMail = user.IdentityUser.Email;
                 string emailToken = await userManager.GenerateChangeEmailTokenAsync(user.IdentityUser, updatedUser.Email);
                 Task<IdentityResult> task = userManager.ChangeEmailAsync(user.IdentityUser, updatedUser.Email, emailToken);
-                tasks.Add(task);
+                task.Wait();
+                if (!task.Result.Succeeded)
+                    tasksSucceeded = false;
             }
             if (!string.IsNullOrEmpty(updatedUser.NewHashedPassword))
             {
                 Task<IdentityResult> task = userManager.ChangePasswordAsync(user.IdentityUser, updatedUser.HashedPassword, updatedUser.NewHashedPassword);
-                tasks.Add(task);
+                task.Wait();
+                if (!task.Result.Succeeded)
+                    tasksSucceeded = false;
             }
 
             if (user.IdentityUser.UserName != updatedUser.Username)
             {
                 oldUsername = user.IdentityUser.UserName??"";
                 Task<IdentityResult> task = userManager.SetUserNameAsync(user.IdentityUser, updatedUser.Username);
-                tasks.Add(task);
+                task.Wait();
+                if (!task.Result.Succeeded)
+                    tasksSucceeded = false;
             }
             user.AgbAcceptedAt = updatedUser.AgbAcceptedAt;
             user.PasswordHint = updatedUser.PasswordHint;
             user.Salt = updatedUser.Salt;
 
-            bool tasksSucceeded = true;
-            tasks.ForEach(
-                task =>
-                {
-                    task.Wait();
-                    if (!task.Result.Succeeded) tasksSucceeded = false;
-                });
+            //tasks.ForEach(
+            //    task =>
+            //    {
+            //        task.Wait();
+            //        if (!task.Result.Succeeded) tasksSucceeded = false;
+            //    });
 
             if (!tasksSucceeded)
             {
