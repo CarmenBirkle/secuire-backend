@@ -29,22 +29,11 @@ namespace PWManagerService.Controllers
             this.factory = new AuthorizationFactory(dataContext, userManager, logger, tokenService);
         }
 
-
         /// <summary>
-        /// JWT kann nicht entwertet werden...
+        /// Usererstellung
         /// </summary>
+        /// <param name="userData"></param>
         /// <returns></returns>
-        //[HttpPost]
-        //[Route("logout")]
-        //public async Task<IActionResult> LogOut()
-        //{
-        //    string token = TokenService.ReadToken(Request.Headers);
-        //    int statusCode = await factory.LogOut(token);
-        //    return StatusCode(statusCode);
-
-        //}
-
-
         [HttpPost]
         [Route("register")]
         public async Task<ActionResult> Register([FromBody] AccountPostPutData userData)
@@ -71,7 +60,6 @@ namespace PWManagerService.Controllers
 
             IdentityResult result = await userManager.CreateAsync(identUser, identUser.PasswordHash);
 
-
             if (result.Succeeded)
             {
                 user.IdentityUser = identUser;
@@ -80,16 +68,18 @@ namespace PWManagerService.Controllers
                 return CreatedAtAction(nameof(Register), new { email = identUser.Email }, user);
             }
 
-
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError(error.Code, error.Description);
             }
 
-
             return BadRequest(ModelState);
         }
 
+        /// <summary>
+        /// Account loeschen. Account wird anhand JWT erkannt, keine weiteren Parameter noetig
+        /// </summary>
+        /// <returns></returns>
         [HttpDelete, Authorize]
         public async Task<ActionResult> DeleteAccount()
         {
@@ -97,6 +87,11 @@ namespace PWManagerService.Controllers
             return StatusCode(statusCode);
         }
 
+        /// <summary>
+        /// Anhand EMail Adresse wird entsprechendes Salt zurueckgegeben
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("Salt")]
         public async Task<ActionResult<object>> GetSalt(string email)
@@ -108,6 +103,11 @@ namespace PWManagerService.Controllers
             return Ok(user.Salt);
         }
 
+        /// <summary>
+        /// Anhand EMail Adresse wird entsprechender Passwordhinweis zurueckgegeben
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("Hint")]
         public async Task<ActionResult<string>> GetHint(string email)
@@ -119,6 +119,12 @@ namespace PWManagerService.Controllers
             return Ok(user.PasswordHint);
         }
 
+        /// <summary>
+        /// Login-Route
+        /// Benutzerdaten und JWT wird zurueckgegeben
+        /// </summary>
+        /// <param name="loginData"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("login")]
         public async Task<ActionResult<User>> Authenticate([FromBody] AuthentificationData loginData)
@@ -145,7 +151,12 @@ namespace PWManagerService.Controllers
             return StatusCode(500);
         }
 
-
+        /// <summary>
+        /// Fuer Aenderung an User, die vorgenommen werden sollen
+        /// IST User wird anhand JWT ermittelt
+        /// </summary>
+        /// <param name="updatedUser"></param>
+        /// <returns></returns>
         [HttpPut, Authorize]
         public async Task<ActionResult<User>> PutUser([FromBody] AccountPostPutData updatedUser)
         {

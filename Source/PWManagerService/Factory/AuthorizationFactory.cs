@@ -24,6 +24,11 @@ namespace PWManagerService
             this.tokenService = tokenService;
         }
 
+        /// <summary>
+        /// Ueberprueft Logindaten. Bei Erfolg wird User mit JWT zurueckgegeben
+        /// </summary>
+        /// <param name="loginData"></param>
+        /// <returns></returns>
         public async Task<(User?, int)> Login(AuthentificationData loginData)
         {
             User? user = await dataContext.GetUser(loginData.Email, userManager);
@@ -99,14 +104,7 @@ namespace PWManagerService
             user.AgbAcceptedAt = updatedUser.AgbAcceptedAt;
             user.PasswordHint = updatedUser.PasswordHint;
             user.Salt = updatedUser.Salt;
-
-            //tasks.ForEach(
-            //    task =>
-            //    {
-            //        task.Wait();
-            //        if (!task.Result.Succeeded) tasksSucceeded = false;
-            //    });
-
+            
             if (!tasksSucceeded)
             {
                 //Rollback

@@ -12,8 +12,6 @@ using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
-//using System.Text.Json;
-
 namespace PWManagerService.Controllers
 {
     [Route("api/[controller]")]
@@ -32,6 +30,10 @@ namespace PWManagerService.Controllers
             this.factory = new DataEntryFactory(dataContext, userManager, logger);
         }
 
+        /// <summary>
+        /// Liefert alle Datensaetze eines Users zurueck. User wird anhand JWT ermittel
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Authorize]
         [Route("all")]
         public async Task<ActionResult<List<object>>> GetAllDataEntries()
@@ -48,35 +50,12 @@ namespace PWManagerService.Controllers
             }
         }
 
-        //[HttpGet, Authorize]
-        //[Route("{id:int}")]
-        //public async Task<ActionResult<DataEntry>> GetDataEntryById(int id)
-        //{
-
-
-        //    PaymentCard paymentCard = dataContext.GetPaymentCard(id);
-        //    SafeNote safeNote = dataContext.GetSafeNote(id);
-        //    Login login = dataContext.GetLogin(id);
-
-        //    if (!(paymentCard == null))
-        //    {
-        //        return Ok(paymentCard);
-        //    }
-        //    else if (!(login == null))
-        //    {
-        //        return Ok(login);
-        //    }
-        //    else if (!(safeNote == null))
-        //    {
-        //        return Ok(safeNote);
-        //    }
-        //    else
-        //    {
-        //        return NotFound("Data Entry with the requested id not found.");
-        //    }
-
-        //}
-
+        /// <summary>
+        /// Zur Erstellung eines Data Entry
+        /// Zugehoeriger User wird anhand JWT ermittelt
+        /// </summary>
+        /// <param name="dataEntryClientRequest"></param>
+        /// <returns></returns>
         [HttpPost, Authorize]
         public async Task<ActionResult<(string, object)>> PostDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest)
         {
@@ -91,6 +70,12 @@ namespace PWManagerService.Controllers
                 return CreatedAtAction(nameof(GetAllDataEntries), dataTuple.Item2);
         }
 
+        /// <summary>
+        /// zum aendern eines DataEntry.
+        /// </summary>
+        /// <param name="dataEntryClientRequest">DataEntry Datensatz</param>
+        /// <param name="id">Dataentry ID</param>
+        /// <returns></returns>
         [HttpPut, Authorize]
         [Route("{id:int}")]
         public async Task<ActionResult<object>> AlterDataEntry([FromBody] DataEntryClientRequest dataEntryClientRequest, int id)
@@ -112,6 +97,11 @@ namespace PWManagerService.Controllers
                 return Ok(updatedDataset.Item2);
         }
 
+        /// <summary>
+        /// Zum Loeschen eines DataEntries.
+        /// </summary>
+        /// <param name="id">Id des zu loeschenden Datensatzes</param>
+        /// <returns></returns>
         [HttpDelete, Authorize]
         [Route("{id:int}")]
         public async Task<ActionResult<int>> DeleteDataEntryById(int id)

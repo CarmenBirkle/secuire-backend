@@ -50,8 +50,6 @@ namespace PWManagerService
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog(logger);
 
-
-
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(option =>
@@ -81,8 +79,6 @@ namespace PWManagerService
                     }
                 });
             });
-
-
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -117,14 +113,9 @@ namespace PWManagerService
                 .AddEntityFrameworkStores<DataContext>()
                 .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>(TokenOptions.DefaultProvider);
 
-
-            //
             builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-);
-
-
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             builder.Services.AddCors(options =>
             {
@@ -134,10 +125,6 @@ namespace PWManagerService
                         builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "https://isefpwmanagerwebapp.azurewebsites.net/");
                     });
             });
-
-
-
-
 
             WebApplication app = builder.Build();
 
@@ -157,7 +144,6 @@ namespace PWManagerService
                 app.Logger.LogInformation("Environment: Production");
             }
 
-
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
@@ -175,6 +161,5 @@ namespace PWManagerService
         /// </summary>
         public static IConfiguration Configuration { get; private set; }
         public const string ApiWithAuthBackendString = "apiWithAuthBackend";//ToDo: Appsettings auslagern
-
     }
 }
